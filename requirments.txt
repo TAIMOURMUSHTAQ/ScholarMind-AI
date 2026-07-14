@@ -1,0 +1,15 @@
+# More fonts
+pip install pymupdf-fonts
+
+# LLM-ready extraction
+pip install pymupdf4llm
+
+# Office support
+pip install pymupdfpro
+
+# OCR (Tesseract must be installed separately)
+# macOS
+brew install tesseract
+
+# Ubuntu / Debian
+sudo apt install tesseract-ocr
