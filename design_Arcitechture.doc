@@ -1,0 +1,29 @@
+src/
+
+│
+
+├── reader/
+
+│      pdf_reader.py
+
+│      exporter.py
+
+│      metadata.py
+
+│
+
+├── models/
+
+│      document.py
+
+│
+
+├── utils/
+
+│      exceptions.py
+
+│      logger.py
+
+│
+
+└── main.py
