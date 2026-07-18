@@ -27,3 +27,42 @@ src/
 │
 
 └── main.py
+
+
+
+
+Updated Structure
+ScholarMind-AI
+│
+├── src
+│   ├── models
+│   ├── reader
+│   ├── utils
+│   └── __init__.py
+│
+├── tests
+│
+├── docs
+│
+├── data
+│   ├── sample_pdfs
+│   └── outputs
+│
+├── notebooks
+│
+├── requirements.txt
+├── README.md
+├── .gitignore
+└── main.py
+
+| Folder             | Purpose                          |
+| ------------------ | -------------------------------- |
+| `src`              | All application code             |
+| `models`           | Data models (`Document`, `Page`) |
+| `reader`           | PDF reading logic                |
+| `utils`            | Logging, exceptions, helpers     |
+| `tests`            | Unit tests                       |
+| `docs`             | Architecture, notes, diagrams    |
+| `data/sample_pdfs` | Sample papers for testing        |
+| `data/outputs`     | Exported TXT, JSON, Markdown     |
+| `notebooks`        | Temporary experiments only       |
