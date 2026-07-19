@@ -13,3 +13,6 @@ brew install tesseract
 
 # Ubuntu / Debian
 sudo apt install tesseract-ocr
+
+#PDFReader
+PDFReader

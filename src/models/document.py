@@ -63,13 +63,22 @@ class Document:
 
     full_text: str = ""
 #Example
-doc = Document(
-    file_name="Pdf_Tables.pdf",
-    file_path="data/sample_pdfs",
-    page_count=5
-)
+# doc = Document(
+#     file_name="Pdf_Tables.pdf",
+#     file_path="data/sample_pdfs",
+#     page_count=5
+# )
+# doc = Document(
+#     file_name="sample_conference_paper.pdf",
+#     file_path="data/sample_pdfs/sample_conference_paper.pdf",
+#     page_count=5
+# )
+# print(doc)
 
-print(doc)
+# #Real Pipeline
+# import PDFReader
+# reader = PDFReader("sample_conference_paper.pdf")
+# document = reader.read()
 
 
 
