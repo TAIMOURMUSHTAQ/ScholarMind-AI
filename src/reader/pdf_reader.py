@@ -6,7 +6,12 @@ import fitz #PymuPdf
 import os
 from src.models.document import Document
 from src.models.page import Page
-
+#Exceptions and loggers defined
+from src.utils.logger import logger
+from src.utils.exceptions import (
+    InvalidPDFError,
+    FileNotFoundErrorSM,
+)
 class PDFReader:
     """Reads a PDF file and retrurns document object
     """
@@ -16,12 +21,17 @@ class PDFReader:
         """Read a PDF File
         Returns:Document
         """
-        doc = fitz.open(self.pdf_path)
-
-        pages = []
-        full_text = ""
-
+        doc = None
         try:
+            if not os.path.exists(self.pdf_path):
+                raise FileNotFoundErrorSM(
+                    f"File not found: {self.pdf_path}"
+                )
+            logger.info("Opening PDF...")
+            doc = fitz.open(self.pdf_path)
+            pages = []
+            full_text = ""
+
             for page_number, page in enumerate(doc, start=1):
                 text = page.get_text()
                 page_obj = Page(
@@ -42,6 +52,8 @@ class PDFReader:
                 full_text=full_text
             )
             return document
+        except Exception as e:
+            raise InvalidPDFError(str(e))
         finally:
-            doc.close()
-        # raise NotImplementedError("Will be implemented in the next lesson")
+            if doc is not None:
+                doc.close()
