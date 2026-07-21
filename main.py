@@ -5,9 +5,18 @@ def main():
     )
     
     document=reader.read()
+    #For explicit metadata
     print("\n Metadata")
     for key, value in document.metadata.items():
           print(f"{key}: {value}")
+    #For statistics
+    print("\n Page Statistics")
+    for page in document.pages:
+          print(
+                page.page_number,
+                page.word_count,
+                page.character_count
+          )
     #Experiment
     print(document.metadata)
     print(document.pages[0])
