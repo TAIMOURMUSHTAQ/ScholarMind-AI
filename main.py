@@ -5,6 +5,9 @@ def main():
     )
     
     document=reader.read()
+    print("\n Metadata")
+    for key, value in document.metadata.items():
+          print(f"{key}: {value}")
     #Experiment
     print(document.metadata)
     print(document.pages[0])
