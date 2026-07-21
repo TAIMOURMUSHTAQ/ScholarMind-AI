@@ -16,3 +16,5 @@ class Page:
     word_count:int
     character_count:int
     metadata:dict[str,Any]=field(default_factory=dict)
+    images_count=0
+    tables_count=0
