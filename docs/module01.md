@@ -1,5 +1,15 @@
 # Module 1 - PDF Reader
 
+## Goal
+Build a reusable PDF Reader.
+
+## Completed
+- Read PDF
+- Extract text
+- Extract metadata
+- Build Document object
+- Build Page objects
+
 ## Features
 - Read PDF files
 - Extract metadata
@@ -12,3 +22,5 @@
 - Layout Detection
 - Image Extraction
 - Table Extraction
+- Markdown Export
+- Section Detection
