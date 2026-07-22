@@ -1,9 +1,9 @@
 import pymupdf
 
+# from src.extractors.block_extractor import BlockExtractor
 from src.extractors.block_extractor import BlockExtractor
-
 doc=pymupdf.open(
-    "data/sample_pdfs/sample_conference_paper.pdf"
+    r"C:\Users\Win\OneDrive\Scholor Mind AI\data\sample_pdfs\sample_confrence_paper.pdf"
 )
 page=doc[0]
 blocks=BlockExtractor.extract(page)
