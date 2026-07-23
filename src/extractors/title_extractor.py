@@ -1,4 +1,5 @@
 class TitleExtractor:
     @staticmethod
     def extract(page):
-        pass
+        page.get_text("dict")
+        
