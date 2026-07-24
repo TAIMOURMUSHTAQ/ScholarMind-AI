@@ -33,3 +33,4 @@ class TitleExtractor:
         )
         # Return the text with the largest font
         return candidates[0]["text"]
+
