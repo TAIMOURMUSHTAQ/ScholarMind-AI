@@ -39,13 +39,17 @@ class AuthorExtractor:
             if found_title:
 
                 # Clean common academic titles
+                # Remove common academic titles
                 block_text = (
                     block_text
                     .replace("Fellow, IEEE", "")
                     .replace("Senior Member, IEEE", "")
                     .replace("Member, IEEE", "")
-                    .replace(" and ", ",")
+                    .replace(", IEEE", "")
                 )
+
+                # Replace " and " with comma
+                block_text = block_text.replace(" and ", ", ")
 
                 authors = []
 
