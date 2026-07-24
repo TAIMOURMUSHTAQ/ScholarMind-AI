@@ -53,6 +53,9 @@ def main():
     print("=" * 60)
 
     print(f"Title: {paper.title}")
+    print("\nAuthors: ")
+    for author in paper.authors:
+        print(f" .{author}")
 
 
 if __name__ == "__main__":

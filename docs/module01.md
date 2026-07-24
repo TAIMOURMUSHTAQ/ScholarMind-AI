@@ -24,3 +24,13 @@ Build a reusable PDF Reader.
 - Table Extraction
 - Markdown Export
 - Section Detection
+
+Version 2 Improvements (Later)
+
+We'll improve this extractor later by:
+
+Detecting superscript affiliation numbers (¹, ²)
+Extracting ORCID IDs
+Matching email addresses
+Extracting affiliations (universities/organizations)
+Handling multiple author layouts

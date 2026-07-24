@@ -1,38 +1,63 @@
 class AuthorExtractor:
-    @staticmethod
-    def extract(page,title):
-        data=page.get_text("dict")
-        found_title=False
-        for block in data["blocks"]:
-            #Skip non-text blocks
-            if block["type"]!=0:
-                continue
-            block_text=""
-            for line in block["lines"]:
-                for span in line["span"]:
-                    block_text+=span["text"]+" "
-            block_text=block_text.strip()
 
+    @staticmethod
+    def extract(page, title):
+
+        data = page.get_text("dict")
+
+        found_title = False
+
+        # Loop through all blocks
+        for block in data["blocks"]:
+
+            # Skip non-text blocks (images, drawings, etc.)
+            if block["type"] != 0:
+                continue
+
+            block_text = ""
+
+            # Loop through all lines
+            for line in block["lines"]:
+
+                # Loop through all spans
+                for span in line["spans"]:
+
+                    block_text += span["text"] + " "
+
+            block_text = block_text.strip()
+
+            # Ignore empty blocks
             if not block_text:
                 continue
-            #Have we reached the title block?
-            if title in block_text:
-                found_title=True
 
-            #The first meaningful block after title
+            # Check if this block contains the title
+            if title in block_text:
+                found_title = True
+                continue
+
+            # First meaningful block after the title
             if found_title:
-                authors=[]
-                #Split by commas
+
+                # Clean common academic titles
+                block_text = (
+                    block_text
+                    .replace("Fellow, IEEE", "")
+                    .replace("Senior Member, IEEE", "")
+                    .replace("Member, IEEE", "")
+                    .replace(" and ", ",")
+                )
+
+                authors = []
+
+                # Split authors
                 for author in block_text.split(","):
-                    author=author.strip()
-                    #Remove common academic titles
-                    author=(
-                        author.replace("Fellow","")
-                        .replace("IEEE","")
-                        .strip()    
-                    )
+
+                    author = author.strip()
+
                     if author:
-                        author.append(author)
+                        authors.append(author)
+
                 return authors
-            return []
-        
+
+        # No authors found
+        return []
