@@ -1,36 +1,11 @@
+from src.models.layout_block import LayoutBlock
 class TitleExtractor:
     @staticmethod
-    def extract(page):
-        data = page.get_text("dict")
-        candidates = []
-        # Loop through all blocks
-        for block in data["blocks"]:
-            # Skip non-text blocks (images, drawings, etc.)
-            if block["type"] != 0:
-                continue
-            # Loop through lines
-            for line in block["lines"]:
-                # Loop through spans
-                for span in line["spans"]:
-                    text = span["text"].strip()
-                    # Ignore empty spans
-                    if not text:
-                        continue
-                    candidates.append(
-                        {
-                            "text": text,
-                            "size": span["size"],
-                            "y": span["bbox"][1]
-                        }
-                    )
-        # No text found
-        if not candidates:
+    def extract(layout_blocks: list[LayoutBlock]) -> str:
+        if not layout_blocks:
             return ""
-        # Sort by largest font first
-        candidates.sort(
-            key=lambda item: item["size"],
-            reverse=True
+        title_block = max(
+            layout_blocks,
+            key=lambda block: block.font_size
         )
-        # Return the text with the largest font
-        return candidates[0]["text"]
-
+        return title_block.text.strip()

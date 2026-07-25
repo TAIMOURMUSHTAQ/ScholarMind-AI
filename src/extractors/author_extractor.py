@@ -1,67 +1,41 @@
+from src.models.layout_block import LayoutBlock
 class AuthorExtractor:
 
     @staticmethod
-    def extract(page, title):
-
-        data = page.get_text("dict")
-
-        found_title = False
-
-        # Loop through all blocks
-        for block in data["blocks"]:
-
-            # Skip non-text blocks (images, drawings, etc.)
-            if block["type"] != 0:
+    def extract(layout_blocks: list[LayoutBlock], title: str):
+        title_index = -1
+        # Locate title
+        for i, block in enumerate(layout_blocks):
+            if block.text == title:
+                title_index = i
+                break
+        if title_index == -1:
+            return []
+        # Search only the next few blocks
+        for block in layout_blocks[title_index + 1:title_index + 4]:
+            text = block.text.strip()
+            if not text:
                 continue
-
-            block_text = ""
-
-            # Loop through all lines
-            for line in block["lines"]:
-
-                # Loop through all spans
-                for span in line["spans"]:
-
-                    block_text += span["text"] + " "
-
-            block_text = block_text.strip()
-
-            # Ignore empty blocks
-            if not block_text:
-                continue
-
-            # Check if this block contains the title
-            if title in block_text:
-                found_title = True
-                continue
-
-            # First meaningful block after the title
-            if found_title:
-
-                # Clean common academic titles
-                # Remove common academic titles
-                block_text = (
-                    block_text
-                    .replace("Fellow, IEEE", "")
+            # Stop if we already reached Abstract
+            if text.lower().startswith("abstract"):
+                break
+            # Clean common academic titles
+            text = (
+                text.replace("Fellow, IEEE", "")
                     .replace("Senior Member, IEEE", "")
                     .replace("Member, IEEE", "")
                     .replace(", IEEE", "")
-                )
-
-                # Replace " and " with comma
-                block_text = block_text.replace(" and ", ", ")
-
-                authors = []
-
-                # Split authors
-                for author in block_text.split(","):
-
-                    author = author.strip()
-
-                    if author:
-                        authors.append(author)
-
+                    .replace(" and ", ", ")
+            )
+            authors = []
+            for name in text.split(","):
+                name = name.strip()
+                if not name:
+                    continue
+                # Skip obvious non-author lines
+                if len(name.split()) < 2:
+                    continue
+                authors.append(name)
+            if authors:
                 return authors
-
-        # No authors found
         return []
