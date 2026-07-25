@@ -30,4 +30,5 @@ class LayoutAnalyzer:
                         block_number=block_no
                     )
                 )
+                layout_blocks.sort(key=lambda block: block.y0)
             return layout_blocks

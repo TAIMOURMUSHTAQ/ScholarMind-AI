@@ -37,26 +37,25 @@
 # if __name__=="__main__":
 #         main()
 
+
 from src.parser.paper_parser import PaperParser
-
-
 def main():
-
     parser = PaperParser()
-
     paper = parser.parse(
-        r"C:\Users\Win\OneDrive\Scholor Mind AI\data\sample_pdfs\sample_confrence_paper.pdf"
+        r"data\sample_pdfs\sample_conference_paper.pdf"
     )
-
     print("=" * 60)
     print("ScholarMind AI")
     print("=" * 60)
-
-    print(f"Title: {paper.title}")
-    print("\nAuthors: ")
+    print("\nTITLE")
+    print("-" * 60)
+    print(paper.title)
+    print("\nAUTHORS")
+    print("-" * 60)
     for author in paper.authors:
-        print(f" .{author}")
-
-
+        print(author)
+    print("\nABSTRACT")
+    print("-" * 60)
+    print(paper.abstract)
 if __name__ == "__main__":
     main()

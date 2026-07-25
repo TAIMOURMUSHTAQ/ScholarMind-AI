@@ -1,21 +1,22 @@
 import pymupdf
 from src.models.paper import Paper
+from src.layout.layout_analyzer import LayoutAnalyzer
 from src.extractors.title_extractor import TitleExtractor
 from src.extractors.author_extractor import AuthorExtractor
+from src.extractors.abstract_extractor import AbstractExtractor
 class PaperParser:
     def parse(self, pdf_path):
-        # Open PDF
         doc = pymupdf.open(pdf_path)
-        # First page
         first_page = doc[0]
-        # Create Paper object
+        layout_blocks = LayoutAnalyzer.extract(first_page)
         paper = Paper()
-        # Extract title
-        paper.title = TitleExtractor.extract(first_page)
-        paper.authors=AuthorExtractor.extract(
-            first_page,
+        paper.title = TitleExtractor.extract(layout_blocks)
+        paper.authors = AuthorExtractor.extract(
+            layout_blocks,
             paper.title
         )
-        # Close document
+        paper.abstract = AbstractExtractor.extract(
+            layout_blocks
+        )
         doc.close()
         return paper
