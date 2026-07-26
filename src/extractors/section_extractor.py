@@ -4,7 +4,7 @@ from src.models.layout_block import LayoutBlock
 
 class SectionExtractor:
     @staticmethod
-    def extract(layout_blocks:list[LayoutBlock])
+    def extract(layout_blocks:list[LayoutBlock]):
         sections=[]
         current_title=None
         current_content=[]
