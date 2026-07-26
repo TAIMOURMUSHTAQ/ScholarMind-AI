@@ -57,5 +57,11 @@ def main():
     print("\nABSTRACT")
     print("-" * 60)
     print(paper.abstract)
+    print("\n\nSECTIONS")
+    print("-"*60)
+    for section in paper.sections:
+        print(section.title)
+        print(section.content[:150])
+        print()
 if __name__ == "__main__":
     main()

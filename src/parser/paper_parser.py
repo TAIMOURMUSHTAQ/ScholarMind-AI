@@ -4,6 +4,7 @@ from src.layout.layout_analyzer import LayoutAnalyzer
 from src.extractors.title_extractor import TitleExtractor
 from src.extractors.author_extractor import AuthorExtractor
 from src.extractors.abstract_extractor import AbstractExtractor
+from src.extractors.section_extractor import SectionExtractor
 class PaperParser:
     def parse(self, pdf_path):
         doc = pymupdf.open(pdf_path)
@@ -16,6 +17,9 @@ class PaperParser:
             paper.title
         )
         paper.abstract = AbstractExtractor.extract(
+            layout_blocks
+        )
+        paper.sections=SectionExtractor.extract(
             layout_blocks
         )
         doc.close()
