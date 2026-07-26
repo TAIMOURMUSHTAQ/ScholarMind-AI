@@ -1,0 +1,9 @@
+{
+    "title": "Sample   Paper   for  IEEE Sponsored Conferences & Symposia",
+    "authors": [
+        "Derong   Liu",
+        "MengChu   Zhou"
+    ],
+    "abstract": "— The   abstract   goes   here.   What   you   need   to   do   is   to insert   your   abstract   here.   Please   try   to   make   it   less   than   150 words. We suggest that you read this document carefully before you   begin   preparing   your   manuscript.   IEEE   does   not   want conference papers to have keywords so you should remove your keyword   list.   Also,   at   this   time,   IEEE   only   has   some   general guidelines   about   the   format   for   conference   papers.   It   is   up   to each   individual   conference   to   decide   which   format   to   use.   In order   to   have   a   uniform   look   for   all   papers   published   in   the WCCI   2006   Proceeding,   we   require   that   every   author   follow the   format   of   this   sample   paper.   This   sample   paper   is   for   latex users.   Authors   may   use   the   sample   paper   here   to   produce   their own   papers   by   following   the   same   format   as   this   sample   paper.\n•   Paper   formatting:   Double   column,   single   spaced,   10pt font.\n•   Text   width:   7.0   in   (178   mm)   and   text   height:   9.375   in (240   mm). All   text   and   ﬁgures   must   be   contained   in   the   178  ×  240 mm   image   area.\n•   The   left/right/bottom   margin   must   be   0.75   in   (19   mm).\n•   The   top   margin   must   be   0.75   in   (19   mm),   except   for the   title   page   where   it   must   be   1   in   (25   mm).\n•   Text   should   appear   in   two   columns,   each   3.4   in   (86.5 mm)   wide   with   0.2   in   (5   mm)   space   between   columns.",
+    "sections": []
+}

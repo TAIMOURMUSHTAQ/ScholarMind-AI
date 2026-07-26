@@ -39,11 +39,25 @@
 
 
 from src.parser.paper_parser import PaperParser
+from pathlib import Path
+from src.exporters.json_exporter import JSONExporter
 def main():
     parser = PaperParser()
-    paper = parser.parse(
-        r"data\sample_pdfs\sample_conference_paper.pdf"
+    # paper = parser.parse(
+    #     r"data\sample_pdfs\sample_conference_paper.pdf"
+    # )
+    
+
+    PROJECT_ROOT = Path(__file__).resolve().parent
+
+    PDF_PATH = (
+        PROJECT_ROOT
+        / "data"
+        / "sample_pdfs"
+        / "sample_conference_paper.pdf"
     )
+
+    paper = parser.parse(str(PDF_PATH))
     print("=" * 60)
     print("ScholarMind AI")
     print("=" * 60)
@@ -63,5 +77,10 @@ def main():
         print(section.title)
         print(section.content[:150])
         print()
+    JSONExporter.export(
+        paper,
+        "output/paper.json"
+    )
+    print("\nJSON exported successfully.")
 if __name__ == "__main__":
     main()

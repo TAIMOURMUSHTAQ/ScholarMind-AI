@@ -10,6 +10,15 @@ class PaperParser:
         doc = pymupdf.open(pdf_path)
         first_page = doc[0]
         layout_blocks = LayoutAnalyzer.extract(first_page)
+        #
+        # print("\n===== LAYOUT BLOCKS =====")
+        # for i, block in enumerate(layout_blocks):
+        #     print(f"\nBLOCK {i}")
+        #     print("-" * 40)
+        #     print(block.text)
+        #     print("Font:", block.font_size)
+        #     print("Y:", block.y0)
+        # #
         paper = Paper()
         paper.title = TitleExtractor.extract(layout_blocks)
         paper.authors = AuthorExtractor.extract(
