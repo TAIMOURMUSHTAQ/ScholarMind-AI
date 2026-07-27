@@ -6,6 +6,7 @@ from src.extractors.author_extractor import AuthorExtractor
 from src.extractors.abstract_extractor import AbstractExtractor
 from src.extractors.section_extractor import SectionExtractor
 from src.extractors.reference_extractor import ReferenceExtractor
+from src.layout.reading_order import ReadingOrderAnalyzer
 class PaperParser:
     def parse(self, pdf_path):
         doc = pymupdf.open(pdf_path)
@@ -20,6 +21,8 @@ class PaperParser:
         #     print("Font:", block.font_size)
         #     print("Y:", block.y0)
         # #
+        #Arrange blocks into the correct reading order
+        layout_blocks=ReadingOrderAnalyzer.sort(layout_blocks)
         paper = Paper()
         paper.title = TitleExtractor.extract(layout_blocks)
         paper.authors = AuthorExtractor.extract(
