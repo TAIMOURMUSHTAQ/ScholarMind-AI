@@ -16,6 +16,13 @@ class JSONExporter:
                     "content": section.content
                 }
                 for section in paper.sections
+            ],
+            "references":[
+                {
+                    "number":ref.number,
+                    "text":ref.text
+                }
+                for ref in paper.references
             ]
         }
         with open(output_path, "w", encoding="utf-8") as file:

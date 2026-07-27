@@ -78,6 +78,12 @@ def main():
         # print(section.content[:150])
         print()
         print(section.content[:150])
+    print("\nREFERENCES")
+    print("-"*60)
+    for reference in paper.references:
+        print(f"[{reference.number}]")
+        print(reference.text)
+        print()
     JSONExporter.export(
         paper,
         "output/paper.json"
