@@ -75,8 +75,9 @@ def main():
     print("-"*60)
     for section in paper.sections:
         print(section.title)
-        print(section.content[:150])
+        # print(section.content[:150])
         print()
+        print(section.content[:150])
     JSONExporter.export(
         paper,
         "output/paper.json"
