@@ -5,39 +5,27 @@ class ReferenceExtractor:
     def extract(layout_blocks):
         references = []
         inside_reference = False
-        current_reference = ""
-        current_number = 0
-
+        current_reference = None
         for block in layout_blocks:
             text = block.text.strip()
-            # Detect start of References section
+            # Detect beginning of bibliography
             if text.upper().startswith("REFERENCES"):
                 inside_reference = True
                 continue
             if not inside_reference:
                 continue
-            # Match [1], [2], [3] ...
+            # Match [1], [2], ...
             match = re.match(r"^\[(\d+)\]\s*(.*)", text)
             if match:
-                # Save previous reference
-                if current_reference:
-                    references.append(
-                        Reference(
-                            number=current_number,
-                            text=current_reference.strip()
-                        )
-                    )
-                current_number = int(match.group(1))
-                current_reference = match.group(2)
-            else:
-                if current_reference:
-                    current_reference += " " + text
-        # Save last reference
-        if current_reference:
-            references.append(
-                Reference(
-                    number=current_number,
-                    text=current_reference.strip()
+                if current_reference is not None:
+                    references.append(current_reference)
+                current_reference = Reference(
+                    number=int(match.group(1)),
+                    raw_text=match.group(2)
                 )
-            )
+            elif current_reference is not None:
+
+                current_reference.raw_text += " " + text
+        if current_reference is not None:
+            references.append(current_reference)
         return references
