@@ -7,6 +7,7 @@ from src.extractors.abstract_extractor import AbstractExtractor
 from src.extractors.section_extractor import SectionExtractor
 from src.extractors.reference_extractor import ReferenceExtractor
 from src.layout.reading_order import ReadingOrderAnalyzer
+from src.extractors.citation_extractor import CitationExtractor
 class PaperParser:
     def parse(self, pdf_path):
         doc = pymupdf.open(pdf_path)
@@ -34,6 +35,9 @@ class PaperParser:
         )
         paper.sections=SectionExtractor.extract(
             layout_blocks
+        )
+        paper.citations=CitationExtractor.extract(
+            paper.sections
         )
         paper.references = ReferenceExtractor.extract(
             layout_blocks

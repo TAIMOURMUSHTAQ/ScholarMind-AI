@@ -17,6 +17,14 @@ class JSONExporter:
                 }
                 for section in paper.sections
             ],
+            "citation":[
+                {
+                    "reference_number":c.reference_number,
+                    "section":c.section_title,
+                    "sentence":c.sentence
+                }
+                for c in paper.citations
+            ],
             "references": [
         {
         "number": ref.number,

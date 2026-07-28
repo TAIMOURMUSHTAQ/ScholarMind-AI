@@ -78,6 +78,24 @@ def main():
         # print(section.content[:150])
         print()
         print(section.content[:150])
+    print("\nCITATIONS")
+    print("-" * 60)
+
+    if not paper.citations:
+
+        print("No citations found.")
+
+    else:
+
+        for citation in paper.citations:
+
+            print(
+                f"[{citation.reference_number}] "
+                f"{citation.section_title}"
+            )
+
+            print(citation.sentence)
+        print()    
     print("\nREFERENCES")
     print("-"*60)
     for reference in paper.references:
