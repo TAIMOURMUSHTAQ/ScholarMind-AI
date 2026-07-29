@@ -102,6 +102,12 @@ def main():
         print(f"[{reference.number}]")
         print(reference.text)
         print()
+    print("\nMETADATA")
+    print("-" * 60)
+    print("DOI:", paper.metadata.doi)
+    print("Year:", paper.metadata.year)
+    print("Venue:", paper.metadata.venue)
+    print("Keywords:", paper.metadata.keywords)
     JSONExporter.export(
         paper,
         "output/paper.json"
