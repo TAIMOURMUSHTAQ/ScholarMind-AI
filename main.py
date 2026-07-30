@@ -41,6 +41,7 @@
 from src.parser.paper_parser import PaperParser
 from pathlib import Path
 from src.exporters.json_exporter import JSONExporter
+from src.exporters.markdown_exporter import MarkdownExporter
 def main():
     parser = PaperParser()
     # paper = parser.parse(
@@ -108,6 +109,10 @@ def main():
     print("Year:", paper.metadata.year)
     print("Venue:", paper.metadata.venue)
     print("Keywords:", paper.metadata.keywords)
+    MarkdownExporter.export(
+    paper,
+    "output/paper.md"
+    )
     JSONExporter.export(
         paper,
         "output/paper.json"
