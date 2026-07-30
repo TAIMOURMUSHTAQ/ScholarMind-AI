@@ -7,7 +7,7 @@ class JSONExporter:
     @staticmethod
     def export(paper, output_path):
         """
-        Export the parsed paper into a structured JSON file.
+        Export a parsed paper into JSON format.
         """
 
         output_path = Path(output_path)
@@ -30,9 +30,14 @@ class JSONExporter:
             },
 
             # -----------------------------------
-            # Document Metadata
+            # Metadata
             # -----------------------------------
-            "metadata": paper.metadata,
+            "metadata": {
+                "doi": paper.metadata.doi,
+                "year": paper.metadata.year,
+                "venue": paper.metadata.venue,
+                "keywords": paper.metadata.keywords
+            },
 
             # -----------------------------------
             # Basic Information
@@ -83,7 +88,11 @@ class JSONExporter:
             ]
         }
 
-        with open(output_path, "w", encoding="utf-8") as file:
+        with open(
+            output_path,
+            "w",
+            encoding="utf-8"
+        ) as file:
 
             json.dump(
                 data,

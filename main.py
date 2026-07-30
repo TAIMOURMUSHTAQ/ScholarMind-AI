@@ -121,7 +121,6 @@
 # if __name__ == "__main__":
 #     main()
 
-
 from pathlib import Path
 
 from src.parser.paper_parser import PaperParser
@@ -135,32 +134,57 @@ def main():
     print("ScholarMind AI")
     print("=" * 60)
 
-    # -----------------------------------
+    # --------------------------------------------------
     # Project Paths
-    # -----------------------------------
+    # --------------------------------------------------
 
     PROJECT_ROOT = Path(__file__).resolve().parent
 
-    PDF_PATH = (
-        PROJECT_ROOT
-        / "data"
-        / "sample_pdfs"
-        / "sample_confrence_paper.pdf"
-    )
+    DATA_FOLDER = PROJECT_ROOT / "data" / "sample_pdfs"
 
-    OUTPUT_DIR = PROJECT_ROOT / "output"
+    PDF_PATH = DATA_FOLDER / "sample_conference_paper.pdf"
 
-    # -----------------------------------
-    # Parse PDF
-    # -----------------------------------
+    OUTPUT_FOLDER = PROJECT_ROOT / "output"
+
+    # --------------------------------------------------
+    # Debug Information
+    # --------------------------------------------------
+
+    print("\nProject Root:")
+    print(PROJECT_ROOT)
+
+    print("\nPDF Path:")
+    print(PDF_PATH)
+
+    print("\nPDF Exists:")
+    print(PDF_PATH.exists())
+
+    if not PDF_PATH.exists():
+
+        print("\nFiles found inside sample_pdfs:\n")
+
+        if DATA_FOLDER.exists():
+
+            for file in DATA_FOLDER.iterdir():
+                print(file.name)
+
+        else:
+
+            print("Folder does not exist:", DATA_FOLDER)
+
+        return
+
+    # --------------------------------------------------
+    # Parse Paper
+    # --------------------------------------------------
 
     parser = PaperParser()
 
     paper = parser.parse(PDF_PATH)
 
-    # -----------------------------------
+    # --------------------------------------------------
     # Display Results
-    # -----------------------------------
+    # --------------------------------------------------
 
     print("\nTITLE")
     print("-" * 60)
@@ -170,94 +194,67 @@ def main():
     print("-" * 60)
 
     if paper.authors:
-
         for author in paper.authors:
             print(author)
-
     else:
-
         print("No authors found.")
 
     print("\nABSTRACT")
     print("-" * 60)
-
-    print(
-        paper.abstract
-        if paper.abstract
-        else "No abstract found."
-    )
+    print(paper.abstract or "No abstract found.")
 
     print("\nSECTIONS")
     print("-" * 60)
 
     if paper.sections:
-
         for section in paper.sections:
-
             print(section.title)
             print(section.content[:150])
             print()
-
     else:
-
         print("No sections found.")
 
     print("\nCITATIONS")
     print("-" * 60)
 
     if paper.citations:
-
         for citation in paper.citations:
-
-            print(
-                f"[{citation.reference_number}] "
-                f"{citation.section_title}"
-            )
-
+            print(f"[{citation.reference_number}] {citation.section_title}")
             print(citation.sentence)
             print()
-
     else:
-
         print("No citations found.")
 
     print("\nREFERENCES")
     print("-" * 60)
 
     if paper.references:
-
         for reference in paper.references:
-
             print(f"[{reference.number}]")
-
             print(reference.raw_text)
-
             print()
-
     else:
-
         print("No references found.")
 
     print("\nMETADATA")
     print("-" * 60)
-
     print("DOI      :", paper.metadata.doi)
     print("Year     :", paper.metadata.year)
     print("Venue    :", paper.metadata.venue)
     print("Keywords :", paper.metadata.keywords)
 
-    # -----------------------------------
-    # Export Results
-    # -----------------------------------
+    # --------------------------------------------------
+    # Export
+    # --------------------------------------------------
 
     MarkdownExporter.export(
         paper,
-        OUTPUT_DIR / "paper.md"
+        OUTPUT_FOLDER / "paper.md"
     )
 
     JSONExporter.export(
         paper,
-        OUTPUT_DIR / "paper.json"
+        OUTPUT_FOLDER / "paper.json"
     )
 
     print("\nParsing completed successfully.")
