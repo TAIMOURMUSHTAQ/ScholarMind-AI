@@ -38,16 +38,106 @@
 #         main()
 
 
-from src.parser.paper_parser import PaperParser
+# from src.parser.paper_parser import PaperParser
+# from pathlib import Path
+# from src.exporters.json_exporter import JSONExporter
+# from src.exporters.markdown_exporter import MarkdownExporter
+# def main():
+#     parser = PaperParser()
+#     # paper = parser.parse(
+#     #     r"data\sample_pdfs\sample_conference_paper.pdf"
+#     # )
+    
+
+#     PROJECT_ROOT = Path(__file__).resolve().parent
+
+#     PDF_PATH = (
+#         PROJECT_ROOT
+#         / "data"
+#         / "sample_pdfs"
+#         / "sample_conference_paper.pdf"
+#     )
+
+#     paper = parser.parse(str(PDF_PATH))
+#     print("=" * 60)
+#     print("ScholarMind AI")
+#     print("=" * 60)
+#     print("\nTITLE")
+#     print("-" * 60)
+#     print(paper.title)
+#     print("\nAUTHORS")
+#     print("-" * 60)
+#     for author in paper.authors:
+#         print(author)
+#     print("\nABSTRACT")
+#     print("-" * 60)
+#     print(paper.abstract)
+#     print("\n\nSECTIONS")
+#     print("-"*60)
+#     for section in paper.sections:
+#         print(section.title)
+#         # print(section.content[:150])
+#         print()
+#         print(section.content[:150])
+#     print("\nCITATIONS")
+#     print("-" * 60)
+
+#     if not paper.citations:
+
+#         print("No citations found.")
+
+#     else:
+
+#         for citation in paper.citations:
+
+#             print(
+#                 f"[{citation.reference_number}] "
+#                 f"{citation.section_title}"
+#             )
+
+#             print(citation.sentence)
+#         print()    
+#     print("\nREFERENCES")
+#     print("-"*60)
+#     for reference in paper.references:
+#         print(f"[{reference.number}]")
+#         print(reference.text)
+#         print()
+#     print("\nMETADATA")
+#     print("-" * 60)
+#     print("DOI:", paper.metadata.doi)
+#     print("Year:", paper.metadata.year)
+#     print("Venue:", paper.metadata.venue)
+#     print("Keywords:", paper.metadata.keywords)
+#     MarkdownExporter.export(
+#     paper,
+#     "output/paper.md"
+#     )
+#     JSONExporter.export(
+#         paper,
+#         "output/paper.json"
+#     )
+#     print("\nJSON exported successfully.")
+# if __name__ == "__main__":
+#     main()
+
+
 from pathlib import Path
+
+from src.parser.paper_parser import PaperParser
 from src.exporters.json_exporter import JSONExporter
 from src.exporters.markdown_exporter import MarkdownExporter
+
+
 def main():
-    parser = PaperParser()
-    # paper = parser.parse(
-    #     r"data\sample_pdfs\sample_conference_paper.pdf"
-    # )
-    
+
+    print("=" * 60)
+    print("ScholarMind AI")
+    print("=" * 60)
+
+    # -----------------------------------
+    # Project Paths
+    # -----------------------------------
 
     PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -55,38 +145,67 @@ def main():
         PROJECT_ROOT
         / "data"
         / "sample_pdfs"
-        / "sample_conference_paper.pdf"
+        / "sample_confrence_paper.pdf"
     )
 
-    paper = parser.parse(str(PDF_PATH))
-    print("=" * 60)
-    print("ScholarMind AI")
-    print("=" * 60)
+    OUTPUT_DIR = PROJECT_ROOT / "output"
+
+    # -----------------------------------
+    # Parse PDF
+    # -----------------------------------
+
+    parser = PaperParser()
+
+    paper = parser.parse(PDF_PATH)
+
+    # -----------------------------------
+    # Display Results
+    # -----------------------------------
+
     print("\nTITLE")
     print("-" * 60)
     print(paper.title)
+
     print("\nAUTHORS")
     print("-" * 60)
-    for author in paper.authors:
-        print(author)
+
+    if paper.authors:
+
+        for author in paper.authors:
+            print(author)
+
+    else:
+
+        print("No authors found.")
+
     print("\nABSTRACT")
     print("-" * 60)
-    print(paper.abstract)
-    print("\n\nSECTIONS")
-    print("-"*60)
-    for section in paper.sections:
-        print(section.title)
-        # print(section.content[:150])
-        print()
-        print(section.content[:150])
+
+    print(
+        paper.abstract
+        if paper.abstract
+        else "No abstract found."
+    )
+
+    print("\nSECTIONS")
+    print("-" * 60)
+
+    if paper.sections:
+
+        for section in paper.sections:
+
+            print(section.title)
+            print(section.content[:150])
+            print()
+
+    else:
+
+        print("No sections found.")
+
     print("\nCITATIONS")
     print("-" * 60)
 
-    if not paper.citations:
-
-        print("No citations found.")
-
-    else:
+    if paper.citations:
 
         for citation in paper.citations:
 
@@ -96,27 +215,53 @@ def main():
             )
 
             print(citation.sentence)
-        print()    
+            print()
+
+    else:
+
+        print("No citations found.")
+
     print("\nREFERENCES")
-    print("-"*60)
-    for reference in paper.references:
-        print(f"[{reference.number}]")
-        print(reference.text)
-        print()
+    print("-" * 60)
+
+    if paper.references:
+
+        for reference in paper.references:
+
+            print(f"[{reference.number}]")
+
+            print(reference.raw_text)
+
+            print()
+
+    else:
+
+        print("No references found.")
+
     print("\nMETADATA")
     print("-" * 60)
-    print("DOI:", paper.metadata.doi)
-    print("Year:", paper.metadata.year)
-    print("Venue:", paper.metadata.venue)
-    print("Keywords:", paper.metadata.keywords)
+
+    print("DOI      :", paper.metadata.doi)
+    print("Year     :", paper.metadata.year)
+    print("Venue    :", paper.metadata.venue)
+    print("Keywords :", paper.metadata.keywords)
+
+    # -----------------------------------
+    # Export Results
+    # -----------------------------------
+
     MarkdownExporter.export(
-    paper,
-    "output/paper.md"
+        paper,
+        OUTPUT_DIR / "paper.md"
     )
+
     JSONExporter.export(
         paper,
-        "output/paper.json"
+        OUTPUT_DIR / "paper.json"
     )
-    print("\nJSON exported successfully.")
+
+    print("\nParsing completed successfully.")
+
+
 if __name__ == "__main__":
     main()

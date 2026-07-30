@@ -1,15 +1,51 @@
 import json
 from pathlib import Path
+
+
 class JSONExporter:
+
     @staticmethod
     def export(paper, output_path):
+        """
+        Export the parsed paper into a structured JSON file.
+        """
+
         output_path = Path(output_path)
-        # Create output folder if it doesn't exist
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Create output directory if it doesn't exist
+        output_path.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
         data = {
+
+            # -----------------------------------
+            # Parser Information
+            # -----------------------------------
+            "parser": {
+                "name": "ScholarMind Parser",
+                "version": "1.0",
+                "engine": "PyMuPDF"
+            },
+
+            # -----------------------------------
+            # Document Metadata
+            # -----------------------------------
+            "metadata": paper.metadata,
+
+            # -----------------------------------
+            # Basic Information
+            # -----------------------------------
             "title": paper.title,
+
             "authors": paper.authors,
+
             "abstract": paper.abstract,
+
+            # -----------------------------------
+            # Sections
+            # -----------------------------------
             "sections": [
                 {
                     "title": section.title,
@@ -17,31 +53,43 @@ class JSONExporter:
                 }
                 for section in paper.sections
             ],
-            "citation":[
+
+            # -----------------------------------
+            # Citations
+            # -----------------------------------
+            "citations": [
                 {
-                    "reference_number":c.reference_number,
-                    "section":c.section_title,
-                    "sentence":c.sentence
+                    "reference_number": citation.reference_number,
+                    "section": citation.section_title,
+                    "sentence": citation.sentence
                 }
-                for c in paper.citations
+                for citation in paper.citations
             ],
+
+            # -----------------------------------
+            # References
+            # -----------------------------------
             "references": [
-        {
-        "number": ref.number,
-        "raw_text": ref.raw_text,
-        "authors": ref.authors,
-        "title": ref.title,
-        "year": ref.year,
-        "venue": ref.venue,
-        "doi": ref.doi
+                {
+                    "number": reference.number,
+                    "raw_text": reference.raw_text,
+                    "authors": reference.authors,
+                    "title": reference.title,
+                    "year": reference.year,
+                    "venue": reference.venue,
+                    "doi": reference.doi
+                }
+                for reference in paper.references
+            ]
         }
-        for ref in paper.references
-        ],
-        }
+
         with open(output_path, "w", encoding="utf-8") as file:
+
             json.dump(
                 data,
                 file,
                 indent=4,
                 ensure_ascii=False
             )
+
+        print(f"JSON exported successfully: {output_path}")
