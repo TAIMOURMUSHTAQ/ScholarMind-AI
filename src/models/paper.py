@@ -9,7 +9,9 @@ class Paper:
     authors: list[str] = field(default_factory=list)
     abstract: str = ""
     keywords: list[str] = field(default_factory=list)
+    full_text: str = ""
     sections: list[Section] = field(default_factory=list)
     references: list[Reference] = field(default_factory=list)
     citations:list[Citation]=field(default_factory=list)
     metadata:Metadata=field(default_factory=Metadata)
+    
