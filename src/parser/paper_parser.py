@@ -80,89 +80,69 @@ class PaperParser:
     Main parser responsible for converting a PDF
     into a structured Paper object.
     """
-
     def parse(self, pdf_path):
         """
         Parse a PDF file and return a populated Paper object.
         """
-
         pdf_path = Path(pdf_path)
-
         if not pdf_path.exists():
             raise FileNotFoundError(
                 f"PDF not found: {pdf_path}"
             )
-
         doc = pymupdf.open(pdf_path)
-
         try:
+            # Store blocks from every page
+            layout_blocks = []
 
-            first_page = doc[0]
+            # Iterate through every page
+            for page in doc:
 
-            # -----------------------------------
-            # Layout Analysis
-            # -----------------------------------
+                page_blocks = LayoutAnalyzer.extract(page)
 
-            layout_blocks = LayoutAnalyzer.extract(first_page)
+                page_blocks = ReadingOrderAnalyzer.sort(
+                    page_blocks
+                )
 
-            # -----------------------------------
-            # Reading Order
-            # -----------------------------------
-
-            layout_blocks = ReadingOrderAnalyzer.sort(
-                layout_blocks
-            )
-
+                layout_blocks.extend(
+                    page_blocks
+                )
             # -----------------------------------
             # Create Paper Object
             # -----------------------------------
-
             paper = Paper()
-
             # -----------------------------------
             # Basic Information
             # -----------------------------------
-
             paper.title = TitleExtractor.extract(
                 layout_blocks
             )
-
             paper.authors = AuthorExtractor.extract(
                 layout_blocks,
                 paper.title
             )
-
             paper.abstract = AbstractExtractor.extract(
                 layout_blocks
             )
-
             # -----------------------------------
             # Content Extraction
             # -----------------------------------
-
             paper.sections = SectionExtractor.extract(
                 layout_blocks
             )
-
             paper.citations = CitationExtractor.extract(
                 paper.sections
             )
-
             paper.references = ReferenceExtractor.extract(
                 layout_blocks
             )
-
             # -----------------------------------
             # Metadata
             # -----------------------------------
-
             paper.metadata = MetadataExtractor.extract(
                 doc,
                 paper
             )
-
             return paper
-
+    
         finally:
-
             doc.close()
