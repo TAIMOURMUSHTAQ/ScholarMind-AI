@@ -58,14 +58,10 @@
 
 
 from pathlib import Path
-
 import pymupdf
-
 from src.models.paper import Paper
-
 from src.layout.layout_analyzer import LayoutAnalyzer
 from src.layout.reading_order import ReadingOrderAnalyzer
-
 from src.extractors.title_extractor import TitleExtractor
 from src.extractors.author_extractor import AuthorExtractor
 from src.extractors.abstract_extractor import AbstractExtractor
@@ -73,7 +69,7 @@ from src.extractors.section_extractor import SectionExtractor
 from src.extractors.citation_extractor import CitationExtractor
 from src.extractors.reference_extractor import ReferenceExtractor
 from src.extractors.metadata_extractor import MetadataExtractor
-
+from src.analyzers.document_statistics import DocumentStatistics
 
 class PaperParser:
     """
@@ -140,6 +136,9 @@ class PaperParser:
             # -----------------------------------
             paper.metadata = MetadataExtractor.extract(
                 doc,
+                paper
+            )
+            paper.statistics = DocumentStatistics.analyze(
                 paper
             )
             return paper

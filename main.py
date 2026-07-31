@@ -243,6 +243,10 @@ def main():
     print("Venue    :", paper.metadata.venue)
     print("Keywords :", paper.metadata.keywords)
 
+    print("\nDOCUMENT STATISTICS")
+    print("-" * 60)
+    for key, value in paper.statistics.items():
+        print(f"{key:<30} {value}")
     # --------------------------------------------------
     # Export
     # --------------------------------------------------

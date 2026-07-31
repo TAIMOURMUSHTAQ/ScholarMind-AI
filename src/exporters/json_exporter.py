@@ -85,7 +85,8 @@ class JSONExporter:
                     "doi": reference.doi
                 }
                 for reference in paper.references
-            ]
+            ],
+            "statistics": paper.statistics
         }
 
         with open(
