@@ -70,6 +70,7 @@ from src.extractors.citation_extractor import CitationExtractor
 from src.extractors.reference_extractor import ReferenceExtractor
 from src.extractors.metadata_extractor import MetadataExtractor
 from src.analyzers.document_statistics import DocumentStatistics
+from src.chunking.chunk_generator import ChunkGenerator
 
 class PaperParser:
     """
@@ -141,6 +142,24 @@ class PaperParser:
             paper.statistics = DocumentStatistics.analyze(
                 paper
             )
+            paper.chunks=ChunkGenerator.generate(
+                paper.sections
+            )
+            print("\n===== CHUNKS =====")
+
+            for chunk in paper.chunks:
+
+                    print("-" * 40)
+
+                    print("Chunk ID :", chunk.id)
+
+                    print("Title    :", chunk.title)
+
+                    print("Words    :", chunk.word_count)
+
+                    print("Preview  :", chunk.text[:100])
+
+                    print()
             return paper
     
         finally:
