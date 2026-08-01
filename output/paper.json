@@ -23,7 +23,15 @@
         },
         {
             "title": "II.   M AIN  R ESULTS",
-            "content": "The   main   results and   ﬁndings   go   here.   You   may   also   have a   section   for   Preliminaries   before   this   section.\nFirst,   if   you   do   not   want   to   number   an   equation,   do   not use   \\ begin– \\ end.   You   can   either   use   \\ [   – \\ ]   or   $$–$$.   For example,   we   have\n˙ x  =  f ( x, u ) +  g ( x, u )\nor\n¨ s  =  G ( s, t )\nwhere  f, g,  and  G  are functions. It is recommended that you do   not   number   an   equation   if   it   will   not   be   cited   in   your paper.\nEquation   (1)   is   numbered!   The   following   equation   is   pro- duced   using   \\ begin { equation } – \\ end { equation } .   The   main objective   function   for   each   unit   can   be   represented   by   a quadratic   cost   function   given   by\nF i ( P i ) =  a i  +  b i P i  +  c i P   2\ni (1)\nwhere   a i ,   b i ,   and   c i   in   (1)   are   the   fuel   consumption   cost coefﬁcients of unit  i , and  P i  represents the value of the power to   be   determined   for   unit   i .\nRecently,   it   is   popular   to   use   \\ begin { align } – \\ end { align } instead   of   \\ begin { eqnarray } – \\ end { eqnarray } .   Equation   (2) is produced using  \\ begin { align } – \\ end { align } .   The objective function   for   each   unit   can   be   represented   by\nc P xi e k xi  ¯ x i   +  c N xi  e − k xi  ¯ x i\nm \u0001\n˙ x l   =\ne k xi  ¯ x i   +  e − k xi  ¯ x i\ni =1\nq \u0001\n+   1\n( c P u j   +  c N uj  )\n2\nj\ny   =   A 0  +  A 1  tanh( K x ¯ x ) +  B  tanh( K u ¯ u )\n=   F ( x ) , (2)\nwhere   F ( x )   is   a   function.\nWell,   the   same   equation,   when   it   is   produced   using \\ begin { eqnarray } – \\ end { eqnarray }   becomes   (3):\nc P xi  e k xi  ¯ x i   +  c N xi  e − k xi  ¯ x i\nm \u0001\n˙ x l =\ne k xi  ¯ x i   +  e − k xi  ¯ x i\ni =1\nq \u0001\n+ 1\n( c P u j   +  c N uj  )\n2\nj\ny = A 0  +  A 1  tanh( K x ¯ x ) +  B  tanh( K u ¯ u ) = F ( x ) , (3)\nwhere   F ( x )   is   a   function.   You   get   the   idea!\nA.   Example   of   a   Figure\nAn   example   of   a   ﬂoating   ﬁgure   using   the   graphicx package.   Note   that   \\ label   must   occur   AFTER   (or   within) \\ caption.   For   ﬁgures,   \\ caption   should   occur   after   the \\ includegraphics.   You   also   need   to   know   how   to   cite   your ﬁgure.   Here   is   an   example:   Figure   1   show   our   simulation results.\n2 A typical angle trajectory\n1.5\n1\n0.5\nDegrees\n0\n−0.5\n−1\n−1.5\n0 50 100 150 200 250 300 350 400 450 500 −2\nTime steps\nFig.   1. Simulation   results\nB.   Figures   and   Tables\nPlease   follow   the   style   in   the   sample   paper   when   generat- ing   your   ﬁgures   and   tables.\nTABLE   I P AGE  L IMIT\nPage   limits 6\nExcess   page   charge $150/page"
+            "content": "The   main   results and   ﬁndings   go   here.   You   may   also   have a   section   for   Preliminaries   before   this   section.\nFirst,   if   you   do   not   want   to   number   an   equation,   do   not use   \\ begin– \\ end.   You   can   either   use   \\ [   – \\ ]   or   $$–$$.   For example,   we   have\n˙ x  =  f ( x, u ) +  g ( x, u )\nor\n¨ s  =  G ( s, t )\nwhere  f, g,  and  G  are functions. It is recommended that you do   not   number   an   equation   if   it   will   not   be   cited   in   your paper.\nEquation   (1)   is   numbered!   The   following   equation   is   pro- duced   using   \\ begin { equation } – \\ end { equation } .   The   main objective   function   for   each   unit   can   be   represented   by   a quadratic   cost   function   given   by\nF i ( P i ) =  a i  +  b i P i  +  c i P   2\ni (1)\nwhere   a i ,   b i ,   and   c i   in   (1)   are   the   fuel   consumption   cost coefﬁcients of unit  i , and  P i  represents the value of the power to   be   determined   for   unit   i .\nRecently,   it   is   popular   to   use   \\ begin { align } – \\ end { align } instead   of   \\ begin { eqnarray } – \\ end { eqnarray } .   Equation   (2) is produced using  \\ begin { align } – \\ end { align } .   The objective function   for   each   unit   can   be   represented   by\nc P xi e k xi  ¯ x i   +  c N xi  e − k xi  ¯ x i\nm \u0001\n˙ x l   =\ne k xi  ¯ x i   +  e − k xi  ¯ x i\ni =1\nq \u0001\n+   1\n( c P u j   +  c N uj  )\n2\nj\ny   =   A 0  +  A 1  tanh( K x ¯ x ) +  B  tanh( K u ¯ u )\n=   F ( x ) , (2)\nwhere   F ( x )   is   a   function.\nWell,   the   same   equation,   when   it   is   produced   using \\ begin { eqnarray } – \\ end { eqnarray }   becomes   (3):\nc P xi  e k xi  ¯ x i   +  c N xi  e − k xi  ¯ x i\nm \u0001\n˙ x l =\ne k xi  ¯ x i   +  e − k xi  ¯ x i\ni =1\nq \u0001\n+ 1\n( c P u j   +  c N uj  )\n2\nj\ny = A 0  +  A 1  tanh( K x ¯ x ) +  B  tanh( K u ¯ u ) = F ( x ) , (3)\nwhere   F ( x )   is   a   function.   You   get   the   idea!\nA.   Example   of   a   Figure\nAn   example   of   a   ﬂoating   ﬁgure   using   the   graphicx package.   Note   that   \\ label   must   occur   AFTER   (or   within) \\ caption.   For   ﬁgures,   \\ caption   should   occur   after   the \\ includegraphics.   You   also   need   to   know   how   to   cite   your ﬁgure.   Here   is   an   example:   Figure   1   show   our   simulation results.\n2 A typical angle trajectory"
+        },
+        {
+            "title": "1.5",
+            "content": "1"
+        },
+        {
+            "title": "0.5",
+            "content": "Degrees\n0\n−0.5\n−1\n−1.5\n0 50 100 150 200 250 300 350 400 450 500 −2\nTime steps\nFig.   1. Simulation   results\nB.   Figures   and   Tables\nPlease   follow   the   style   in   the   sample   paper   when   generat- ing   your   ﬁgures   and   tables.\nTABLE   I P AGE  L IMIT\nPage   limits 6\nExcess   page   charge $150/page"
         },
         {
             "title": "C.   Page   Limit   and   Overlength   Page   Charges",
@@ -31,7 +39,7 @@
         },
         {
             "title": "III.   C ONCLUSIONS",
-            "content": "The   conclusion   goes   here.   This   sample   paper   is   for   latex users.   Authors   may   follow   the   sample   paper   here   to   produce their own papers by following the same format as this sample paper.\nA PPENDIX\nPut   your   appendix   here   if   you   have   any.\nA CKNOWLEDGMENT\nThe authors would like to thank Mr. XYZ for his/her help. This   work   was   supported   in   part   by   the   National   Science Foundation   under   grant   no.   XXXXX,   etc.\nR EFERENCES\n[1]   P.   G.   DeLima   and   G.   G.   Yen,   “Multiple   model   fault   tolerant   control\nusing globalized dual heuristic programming,”  Proc. IEEE International Symposium   on   Intelligent   Control ,   Houston,   TX,   Sept.   2003,   pp.   523– 528.   (Invited   paper) [2]   A.   N.   Michel   and   R.   K.   Miller,   Qualitative   Analysis   of   Large   Scale\nDynamical   Systems ,   New   York:   Academic   Press,   1977. [3]   D. V. Prokhorov,  Adaptive Critic Designs and Their Applications , Ph.D.\nDissertation,   Texas   Tech   University,   Lubbock,   TX,   Oct.   1997. [4]   J.   Si,   A.   Barto,   W.   Powell,   and   D.   Wunsch,   Editors,   Handbook   of\nLearning   and   Approximate   Dynamic   Programming ,   New   York:   IEEE and   Wiley,   2004. [5]   P. J. Werbos, “Approximate dynamic programming for real-time control\nand   neural   modeling,”   in Handbook   of   Intelligent   Control:   Neural , Fuzzy ,   and   Adaptive   Approaches   (Chapter   13),   Edited   by   D.   A.   White and   D.   A.   Sofge,   New   York,   NY:   Van   Nostrand   Reinhold,   1992. [6]   P.   J.   Werbos,   “Building   and   understanding   adaptive   systems:   A   sta-\ntistical/numerical   approach   to   factory   automation   and   brain   research,” IEEE   Transactions   on   Systems,   Man,   and   Cybernetics ,   vol.   SMC-17, pp.   7–20,   Jan./Feb.   1987."
+            "content": "The   conclusion   goes   here.   This   sample   paper   is   for   latex users.   Authors   may   follow   the   sample   paper   here   to   produce their own papers by following the same format as this sample paper.\nA PPENDIX\nPut   your   appendix   here   if   you   have   any.\nA CKNOWLEDGMENT\nThe authors would like to thank Mr. XYZ for his/her help. This   work   was   supported   in   part   by   the   National   Science Foundation   under   grant   no.   XXXXX,   etc."
         }
     ],
     "citations": [
@@ -39,45 +47,15 @@
             "reference_number": 2,
             "section": "C.   Page   Limit   and   Overlength   Page   Charges",
             "sentence": "TABLE   II C OMPARISON   RESULTS   WITH   METHODS   IN  [2] (40   UNIT   SYSTEM   WITH\nVALVE - POINT   EFFECTS )\nMethod Mean Best Mean Maximum Minimum time time cost cost cost CEP 928 ."
-        },
-        {
-            "reference_number": 1,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "R EFERENCES\n[1]   P."
-        },
-        {
-            "reference_number": 2,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "(Invited   paper) [2]   A."
-        },
-        {
-            "reference_number": 3,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "[3]   D."
-        },
-        {
-            "reference_number": 4,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "[4]   J."
-        },
-        {
-            "reference_number": 5,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "[5]   P."
-        },
-        {
-            "reference_number": 6,
-            "section": "III.   C ONCLUSIONS",
-            "sentence": "[6]   P."
         }
     ],
     "references": [],
     "statistics": {
         "title_length": 59,
         "author_count": 2,
-        "section_count": 4,
+        "section_count": 6,
         "reference_count": 0,
-        "citation_count": 7,
+        "citation_count": 1,
         "word_count": 1350,
         "character_count": 13167,
         "sentence_count": 167,
