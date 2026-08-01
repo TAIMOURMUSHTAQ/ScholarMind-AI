@@ -228,13 +228,15 @@ def main():
     print("\nREFERENCES")
     print("-" * 60)
 
-    if paper.references:
-        for reference in paper.references:
-            print(f"[{reference.number}]")
-            print(reference.raw_text)
-            print()
+    if not paper.references:
+
+            print("No references found.")
     else:
-        print("No references found.")
+
+        for reference in paper.references:
+                print(f"[{reference.number}]")
+                print(reference.raw_text)
+                print()
 
     print("\nMETADATA")
     print("-" * 60)
