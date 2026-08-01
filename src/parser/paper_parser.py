@@ -91,18 +91,24 @@ class PaperParser:
             # Store blocks from every page
             layout_blocks = []
 
-            # Iterate through every page
+                # Store complete document text
+            full_text = ""
+
+                # Iterate through every page
             for page in doc:
 
+                    # -------- Full page text --------
+                    # sort=True usually produces a more natural reading order
+                full_text += page.get_text("text", sort=True)
+                full_text += "\n\n"
+                    # -------- Layout blocks --------
                 page_blocks = LayoutAnalyzer.extract(page)
 
                 page_blocks = ReadingOrderAnalyzer.sort(
                     page_blocks
                 )
 
-                layout_blocks.extend(
-                    page_blocks
-                )
+                layout_blocks.extend(page_blocks)
             # -----------------------------------
             # Create Paper Object
             # -----------------------------------
@@ -120,6 +126,11 @@ class PaperParser:
             paper.abstract = AbstractExtractor.extract(
                 layout_blocks
             )
+            # -----------------------------------
+            # Full Document Text
+            # -----------------------------------
+
+            paper.full_text = full_text.strip()
             # -----------------------------------
             # Content Extraction
             # -----------------------------------
@@ -139,27 +150,28 @@ class PaperParser:
                 doc,
                 paper
             )
+            
             paper.statistics = DocumentStatistics.analyze(
                 paper
             )
             paper.chunks=ChunkGenerator.generate(
                 paper.sections
             )
-            print("\n===== CHUNKS =====")
+            # print("\n===== CHUNKS =====")
 
-            for chunk in paper.chunks:
+            # for chunk in paper.chunks:
 
-                    print("-" * 40)
+            #         print("-" * 40)
 
-                    print("Chunk ID :", chunk.id)
+            #         print("Chunk ID :", chunk.id)
 
-                    print("Title    :", chunk.title)
+            #         print("Title    :", chunk.title)
 
-                    print("Words    :", chunk.word_count)
+            #         print("Words    :", chunk.word_count)
 
-                    print("Preview  :", chunk.text[:100])
+            #         print("Preview  :", chunk.text[:100])
 
-                    print()
+            #         print()
             return paper
     
         finally:

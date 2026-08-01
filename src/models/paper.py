@@ -11,6 +11,9 @@ class Paper:
     abstract: str = ""
     keywords: list[str] = field(default_factory=list)
     full_text: str = ""
+    statistics: dict = field(
+        default_factory=dict
+    )
     sections: list[Section] = field(default_factory=list)
     references: list[Reference] = field(default_factory=list)
     citations:list[Citation]=field(default_factory=list)
