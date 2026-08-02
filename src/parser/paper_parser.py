@@ -71,6 +71,7 @@ from src.extractors.reference_extractor import ReferenceExtractor
 from src.extractors.metadata_extractor import MetadataExtractor
 from src.analyzers.document_statistics import DocumentStatistics
 from src.chunking.chunk_generator import ChunkGenerator
+from src.embeddings.embedding_generator import EmbeddingGenerator
 
 class PaperParser:
     """
@@ -180,6 +181,9 @@ class PaperParser:
             )
             paper.chunks=ChunkGenerator.generate(
                 paper.sections
+            )
+            paper.chunks = EmbeddingGenerator.generate(
+                paper.chunks
             )
             # print("\n===== CHUNKS =====")
 

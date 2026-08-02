@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -18,3 +18,7 @@ class Chunk:
     page_end: int
 
     word_count: int
+
+    embedding: list[float] = field(
+        default_factory=list
+    )
