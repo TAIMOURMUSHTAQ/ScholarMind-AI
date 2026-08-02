@@ -126,7 +126,7 @@ from pathlib import Path
 from src.parser.paper_parser import PaperParser
 from src.exporters.json_exporter import JSONExporter
 from src.exporters.markdown_exporter import MarkdownExporter
-
+from src.vectorstore.vector_store import VectorStore
 
 def main():
 
@@ -181,6 +181,17 @@ def main():
     parser = PaperParser()
 
     paper = parser.parse(PDF_PATH)
+    
+
+    vector_db = VectorStore()
+
+    vector_db.build(
+            paper.chunks
+        )
+
+    vector_db.save(
+            "indexes"
+        )
 
     # --------------------------------------------------
     # Display Results
