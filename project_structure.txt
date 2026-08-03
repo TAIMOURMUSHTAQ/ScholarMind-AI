@@ -1,0 +1,176 @@
+Folder PATH listing
+Volume serial number is 000000D0 D0B8:EC27
+C:.
+¦   LICENSE
+¦   main.py
+¦   project_structure.txt
+¦   README.md
+¦   requirments.txt
+¦   
++---.vscode
+¦       settings.json
+¦       
++---data
+¦   +---outputs
+¦   +---sample_pdfs
+¦           Multi-Layout_Unstructured_Invoice_Documents_Datase.pdf
+¦           Pdf_Tables.pdf
+¦           sample_conference_paper.pdf
+¦           Scanned_pdf.pdf
+¦           User_Guide NUS Summer Internship.pdf
+¦           
++---docs
+¦       architecture_v1.md
+¦       module01.md
+¦       title_extractor.md
+¦       
++---extras
+¦       design_Arcitechture.doc
+¦       pypdf.py
+¦       
++---images
+¦       page_0.png
+¦       
++---indexes
+¦       paper.index
+¦       
++---notebooks
++---output
+¦       paper.json
+¦       paper.md
+¦       
++---scripts
+¦   ¦   block_playground.py
+¦   ¦   dict_playground.py
+¦   ¦   
+¦   +---__pycache__
+¦           block_playground.cpython-313.pyc
+¦           dict_playground.cpython-313.pyc
+¦           
++---src
+¦   ¦   __init__.py
+¦   ¦   
+¦   +---analyzers
+¦   ¦   ¦   document_statistics.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           document_statistics.cpython-313.pyc
+¦   ¦           
+¦   +---chunking
+¦   ¦   ¦   chunk_generator.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           chunk_generator.cpython-313.pyc
+¦   ¦           
+¦   +---embeddings
+¦   ¦   ¦   embedding_generator.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           embedding_generator.cpython-313.pyc
+¦   ¦           
+¦   +---exporters
+¦   ¦   ¦   json_exporter.py
+¦   ¦   ¦   markdown_exporter.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           json_exporter.cpython-313.pyc
+¦   ¦           markdown_exporter.cpython-313.pyc
+¦   ¦           
+¦   +---extractors
+¦   ¦   ¦   abstract_extractor.py
+¦   ¦   ¦   author_extractor.py
+¦   ¦   ¦   block_extractor.py
+¦   ¦   ¦   citation_extractor.py
+¦   ¦   ¦   metadata_extractor.py
+¦   ¦   ¦   reference_extractor.py
+¦   ¦   ¦   section_extractor.py
+¦   ¦   ¦   title_extractor.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           abstract_extractor.cpython-313.pyc
+¦   ¦           author_extractor.cpython-313.pyc
+¦   ¦           block_extractor.cpython-313.pyc
+¦   ¦           citation_extractor.cpython-313.pyc
+¦   ¦           metadata_extractor.cpython-313.pyc
+¦   ¦           reference_extractor.cpython-313.pyc
+¦   ¦           section_extractor.cpython-313.pyc
+¦   ¦           title_extractor.cpython-313.pyc
+¦   ¦           __init__.cpython-313.pyc
+¦   ¦           
+¦   +---layout
+¦   ¦   ¦   layout_analyzer.py
+¦   ¦   ¦   reading_order.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           layout_analyzer.cpython-313.pyc
+¦   ¦           reading_order.cpython-313.pyc
+¦   ¦           
+¦   +---models
+¦   ¦   ¦   chunks.py
+¦   ¦   ¦   citation.py
+¦   ¦   ¦   document.py
+¦   ¦   ¦   embedding.py
+¦   ¦   ¦   layout_block.py
+¦   ¦   ¦   metadata.py
+¦   ¦   ¦   page.py
+¦   ¦   ¦   paper.py
+¦   ¦   ¦   reference.py
+¦   ¦   ¦   section.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---indexes
+¦   ¦   +---__pycache__
+¦   ¦           chunks.cpython-313.pyc
+¦   ¦           citation.cpython-313.pyc
+¦   ¦           document.cpython-313.pyc
+¦   ¦           layout_block.cpython-313.pyc
+¦   ¦           metadata.cpython-313.pyc
+¦   ¦           page.cpython-313.pyc
+¦   ¦           paper.cpython-313.pyc
+¦   ¦           reference.cpython-313.pyc
+¦   ¦           section.cpython-313.pyc
+¦   ¦           __init__.cpython-313.pyc
+¦   ¦           
+¦   +---parser
+¦   ¦   ¦   paper_parser.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           paper_parser.cpython-313.pyc
+¦   ¦           
+¦   +---reader
+¦   ¦   ¦   exporter.py
+¦   ¦   ¦   metadata.py
+¦   ¦   ¦   pdf_reader.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           pdf_reader.cpython-313.pyc
+¦   ¦           
+¦   +---search
+¦   ¦   ¦   semantic_search.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           semantic_search.cpython-313.pyc
+¦   ¦           
+¦   +---utils
+¦   ¦   ¦   exceptions.py
+¦   ¦   ¦   logger.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           exceptions.cpython-313.pyc
+¦   ¦           logger.cpython-313.pyc
+¦   ¦           
+¦   +---vectorstore
+¦   ¦   ¦   vector_store.py
+¦   ¦   ¦   
+¦   ¦   +---__pycache__
+¦   ¦           vector_store.cpython-313.pyc
+¦   ¦           
+¦   +---__pycache__
+¦           __init__.cpython-313.pyc
+¦           
++---tests
+        test_pdf_reader.py
+        test_title_extractor.py
+        
