@@ -127,6 +127,8 @@ from src.parser.paper_parser import PaperParser
 from src.exporters.json_exporter import JSONExporter
 from src.exporters.markdown_exporter import MarkdownExporter
 from src.vectorstore.vector_store import VectorStore
+from src.search.semantic_search import SemanticSearcher
+
 
 def main():
 
@@ -188,10 +190,13 @@ def main():
     vector_db.build(
             paper.chunks
         )
-
+    searcher = SemanticSearcher(
+        vector_db,
+        paper.chunks
+    )
     vector_db.save(
-            "indexes"
-        )
+                "indexes"
+            )
 
     # --------------------------------------------------
     # Display Results
@@ -260,6 +265,30 @@ def main():
     print("-" * 60)
     for key, value in paper.statistics.items():
         print(f"{key:<30} {value}")
+
+
+    print()
+
+    print("="*60)
+
+    print("SEMANTIC SEARCH")
+
+    print("="*60)
+
+    results = searcher.search(
+        "conference paper formatting",
+        top_k=3
+    )
+
+    for chunk, score in results:
+
+        print()
+
+        print(chunk.title)
+
+        print(score)
+
+        print(chunk.text[:250])
     # --------------------------------------------------
     # Export
     # --------------------------------------------------

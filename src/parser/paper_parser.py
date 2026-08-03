@@ -71,7 +71,7 @@ from src.extractors.reference_extractor import ReferenceExtractor
 from src.extractors.metadata_extractor import MetadataExtractor
 from src.analyzers.document_statistics import DocumentStatistics
 from src.chunking.chunk_generator import ChunkGenerator
-from src.embeddings.embedding_generator import EmbeddingGenerator
+from src.extractors.embeddings.embedding_generator import EmbeddingGenerator
 
 class PaperParser:
     """
