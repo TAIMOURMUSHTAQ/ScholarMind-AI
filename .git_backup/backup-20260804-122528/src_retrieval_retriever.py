@@ -23,24 +23,28 @@ class Retriever:
         """
         Retrieve the top-k most relevant chunks.
 
-        Parameters
-        ----------
-        query : str
-            User query.
-
-        top_k : int
-            Number of chunks to return.
-
-        Returns
-        -------
-        list
-            Ranked Chunk objects.
+        Returns a plain list of Chunk objects. The underlying
+        semantic_searcher may return (chunk, score) tuples; this
+        method normalizes that into a list of Chunk objects so
+        downstream code doesn't need to unpack tuples.
         """
 
-        return self.semantic_searcher.search(
+        results = self.semantic_searcher.search(
             query=query,
             top_k=top_k
         )
+
+        # Normalize results: accept either [(chunk, score), ...]
+        # or [chunk, ...] and return [chunk, ...].
+        chunks = []
+        for item in results:
+            if isinstance(item, tuple) or isinstance(item, list):
+                if len(item) >= 1:
+                    chunks.append(item[0])
+            else:
+                chunks.append(item)
+
+        return chunks
 
     def retrieve_context(
         self,
