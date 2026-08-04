@@ -128,7 +128,7 @@ from src.exporters.json_exporter import JSONExporter
 from src.exporters.markdown_exporter import MarkdownExporter
 from src.vectorstore.vector_store import VectorStore
 from src.search.semantic_search import SemanticSearcher
-
+from src.chat.chat_engine import ChatEngine
 
 def main():
 
@@ -292,6 +292,80 @@ def main():
     # --------------------------------------------------
     # Export
     # --------------------------------------------------
+    # chat = ChatEngine(
+    # semantic_searcher=
+    # )while True:
+
+    # question = input(
+    #     "\nAsk > "
+    # )
+
+    # if question.lower() in [
+    #     "exit",
+    #     "quit"
+    # ]:
+    #     break
+
+    # result = chat.ask(question)
+
+    # print("\nAnswer\n")
+
+    # print(result["answer"])
+
+# --------------------------------------------------
+# Chat
+# --------------------------------------------------
+
+    chat = ChatEngine(
+        semantic_searcher=searcher
+    )
+
+    print("\n" + "=" * 60)
+    print("ScholarMind AI Chat")
+    print("=" * 60)
+    print("Type 'exit' or 'quit' to leave.\n")
+
+    while True:
+
+        question = input("Ask > ").strip()
+
+        if question.lower() in ["exit", "quit"]:
+            break
+
+        try:
+
+            result = chat.ask(question)
+
+            print("\n" + "=" * 60)
+            print("ANSWER")
+            print("=" * 60)
+            print(result["answer"])
+
+        except Exception as e:
+
+            print("\nError:", e)
+
+    # --------------------------------------------------
+    # Export Results
+    # --------------------------------------------------
+
+    MarkdownExporter.export(
+        paper,
+        OUTPUT_FOLDER / "paper.md"
+    )
+
+    JSONExporter.export(
+        paper,
+        OUTPUT_FOLDER / "paper.json"
+    )
+
+    print("\nMarkdown exported successfully.")
+    print(
+        f"JSON exported successfully: "
+        f"{OUTPUT_FOLDER / 'paper.json'}"
+    )
+
+    print("\nParsing completed successfully.")
 
     MarkdownExporter.export(
         paper,
