@@ -137,9 +137,32 @@ def main():
         description="Parse a paper and optionally start chat."
     )
     parser.add_argument(
+        "--pdf",
+        type=str,
+        default=None,
+        help="Path to a PDF to analyze. Defaults to the bundled sample paper."
+    )
+    parser.add_argument(
         "--chat",
         action="store_true",
         help="Start the interactive chat loop after parsing."
+    )
+    parser.add_argument(
+        "--ask",
+        type=str,
+        default=None,
+        help="Ask one question and print the answer without entering chat mode."
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=5,
+        help="Number of relevant chunks to retrieve for search and chat."
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print extra parser diagnostics."
     )
     args = parser.parse_args()
 
@@ -155,7 +178,10 @@ def main():
 
     DATA_FOLDER = PROJECT_ROOT / "data" / "sample_pdfs"
 
-    PDF_PATH = DATA_FOLDER / "sample_conference_paper.pdf"
+    PDF_PATH = Path(args.pdf) if args.pdf else DATA_FOLDER / "sample_conference_paper.pdf"
+
+    if not PDF_PATH.is_absolute():
+        PDF_PATH = (PROJECT_ROOT / PDF_PATH).resolve()
 
     OUTPUT_FOLDER = PROJECT_ROOT / "output"
 
@@ -193,7 +219,7 @@ def main():
 
     paper_parser = PaperParser()
 
-    paper = paper_parser.parse(PDF_PATH)
+    paper = paper_parser.parse(PDF_PATH, verbose=args.verbose)
 
     OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
 
@@ -290,68 +316,72 @@ def main():
     else:
         print("No document statistics available.")
 
-
-    print()
-
-    print("="*60)
-
-    print("SEMANTIC SEARCH")
-
-    print("="*60)
-
-    if searcher is not None:
-        results = searcher.search(
-            "conference paper formatting",
-            top_k=3
-        )
-
-        for chunk, score in results:
-
-            print()
-            print(chunk.title)
-            print(score)
-            print(chunk.text[:250])
-
-    if args.chat:
+    if args.ask or args.chat:
 
         from src.chat.chat_engine import ChatEngine
 
-        if not os.getenv("GEMINI_API_KEY"):
-            print("\nChat skipped because GEMINI_API_KEY is not set.")
-            return
-
         if searcher is None:
-            print("\nChat skipped because no chunks were generated.")
+            print("\nAssistant mode skipped because no chunks were generated.")
             return
 
         chat = ChatEngine(
-            semantic_searcher=searcher
+            semantic_searcher=searcher,
+            paper=paper
         )
 
-        print("\n" + "=" * 60)
-        print("ScholarMind AI Chat")
-        print("=" * 60)
-        print("Type 'exit' or 'quit' to leave.\n")
+        def print_answer(result):
 
-        while True:
+            print("\n" + "=" * 60)
+            print("ANSWER")
+            print("=" * 60)
+            print(result["answer"])
 
-            question = input("Ask > ").strip()
+            if result.get("sources"):
+                print("\nSOURCES")
+                print("-" * 60)
+                for source in result["sources"]:
+                    print(
+                        f"[{source['rank']}] {source['title']} "
+                        f"(score: {source['score']:.3f})"
+                    )
+                    print(source["preview"])
+                    print()
 
-            if question.lower() in ["exit", "quit"]:
-                break
+        if args.ask:
 
-            try:
+            print_answer(
+                chat.ask(
+                    args.ask,
+                    top_k=args.top_k
+                )
+            )
 
-                result = chat.ask(question)
+        if args.chat:
 
-                print("\n" + "=" * 60)
-                print("ANSWER")
-                print("=" * 60)
-                print(result["answer"])
+            print("\n" + "=" * 60)
+            print("ScholarMind AI Chat")
+            print("=" * 60)
+            print("Type 'exit' or 'quit' to leave.\n")
 
-            except Exception as e:
+            while True:
 
-                print("\nError:", e)
+                question = input("Ask > ").strip()
+
+                if question.lower() in ["exit", "quit"]:
+                    break
+
+                try:
+
+                    print_answer(
+                        chat.ask(
+                            question,
+                            top_k=args.top_k
+                        )
+                    )
+
+                except Exception as e:
+
+                    print("\nError:", e)
 
     print("\nParsing completed successfully.")
 

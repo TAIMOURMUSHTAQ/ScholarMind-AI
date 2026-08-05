@@ -24,6 +24,11 @@ class SemanticSearcher:
         top_k=5
     ):
 
+        if not self.chunks or self.vector_store.index is None:
+            return []
+
+        top_k = max(1, min(top_k, len(self.chunks)))
+
         query_vector = self.model.encode(
             query,
             convert_to_numpy=True
@@ -44,11 +49,13 @@ class SemanticSearcher:
             if idx == -1:
                 continue
 
+            relevance = 1.0 / (1.0 + float(score))
+
             results.append(
 
                 (
                     self.chunks[idx],
-                    score
+                    relevance
                 )
 
             )

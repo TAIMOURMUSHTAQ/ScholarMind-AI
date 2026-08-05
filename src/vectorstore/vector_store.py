@@ -14,6 +14,9 @@ class VectorStore:
 
     def build(self, chunks):
 
+        if not chunks:
+            raise ValueError("Cannot build a vector index from no chunks.")
+
         embeddings = np.array(
             [chunk.embedding for chunk in chunks],
             dtype="float32"

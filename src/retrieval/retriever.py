@@ -15,6 +15,20 @@ class Retriever:
     def __init__(self, semantic_searcher: SemanticSearcher):
         self.semantic_searcher = semantic_searcher
 
+    def retrieve_ranked(
+        self,
+        query: str,
+        top_k: int = 5
+    ):
+        """
+        Retrieve ranked chunk/score pairs.
+        """
+
+        return self.semantic_searcher.search(
+            query=query,
+            top_k=top_k
+        )
+
     def retrieve(
         self,
         query: str,
@@ -37,10 +51,10 @@ class Retriever:
             Ranked Chunk objects.
         """
 
-        return self.semantic_searcher.search(
+        return [chunk for chunk, _score in self.retrieve_ranked(
             query=query,
             top_k=top_k
-        )
+        )]
 
     def retrieve_context(
         self,
@@ -58,13 +72,6 @@ class Retriever:
             top_k
         )
 
-        context = ""
+        from src.qa.context_builder import ContextBuilder
 
-        for i, chunk in enumerate(chunks, start=1):
-
-            context += (
-                f"[Chunk {i}]\n"
-                f"{chunk.text}\n\n"
-            )
-
-        return context
+        return ContextBuilder.build(chunks)

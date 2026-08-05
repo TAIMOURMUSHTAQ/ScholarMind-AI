@@ -78,7 +78,7 @@ class PaperParser:
     Main parser responsible for converting a PDF
     into a structured Paper object.
     """
-    def parse(self, pdf_path):
+    def parse(self, pdf_path, verbose=False):
         """
         Parse a PDF file and return a populated Paper object.
         """
@@ -141,30 +141,30 @@ class PaperParser:
             paper.citations = CitationExtractor.extract(
                 paper.sections
             )
-            print("\n" + "=" * 70)
-            print("LAYOUT BLOCKS NEAR REFERENCES")
-            print("=" * 70)
+            if verbose:
+                print("\n" + "=" * 70)
+                print("LAYOUT BLOCKS NEAR REFERENCES")
+                print("=" * 70)
 
-            for i, block in enumerate(layout_blocks):
+                for i, block in enumerate(layout_blocks):
 
-                text = block.text.strip()
+                    text = block.text.strip()
 
-                if (
-                    "REFERENCE" in text.upper()
-                    or text.startswith("[1]")
-                    or text.startswith("1.")
-                ):
-                    print(f"\nBLOCK {i}")
-                    print("-" * 60)
-                    print(text)
+                    if (
+                        "REFERENCE" in text.upper()
+                        or text.startswith("[1]")
+                        or text.startswith("1.")
+                    ):
+                        print(f"\nBLOCK {i}")
+                        print("-" * 60)
+                        print(text)
 
-                    # print the next few blocks too
-                    for j in range(i + 1, min(i + 6, len(layout_blocks))):
+                        for j in range(i + 1, min(i + 6, len(layout_blocks))):
 
-                        print("\nNEXT BLOCK")
-                        print(layout_blocks[j].text)
+                            print("\nNEXT BLOCK")
+                            print(layout_blocks[j].text)
 
-                    break
+                        break
             paper.references = ReferenceExtractor.extract(
                 layout_blocks
             )

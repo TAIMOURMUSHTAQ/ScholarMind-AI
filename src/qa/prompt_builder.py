@@ -23,7 +23,7 @@ Rules:
 
 "I couldn't find this information in the paper."
 
-4. Quote important details when possible.
+4. Cite sources by their source number when possible.
 
 5. Be concise but informative.
 """
@@ -49,4 +49,5 @@ Question
 ==============================
 Answer
 ==============================
+Return a direct answer first, then a short source list.
 """

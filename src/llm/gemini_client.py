@@ -16,10 +16,11 @@ class GeminiClient:
 
         api_key = os.getenv("GEMINI_API_KEY")
 
+        self.available = bool(api_key)
+
         if not api_key:
-            raise ValueError(
-                "GEMINI_API_KEY not found in .env"
-            )
+            self.model = None
+            return
 
         genai.configure(api_key=api_key)
 
@@ -31,6 +32,11 @@ class GeminiClient:
         self,
         prompt: str
     ) -> str:
+
+        if not self.available or self.model is None:
+            raise RuntimeError(
+                "GEMINI_API_KEY not found in .env"
+            )
 
         response = self.model.generate_content(
             prompt

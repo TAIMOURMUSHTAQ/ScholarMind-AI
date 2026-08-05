@@ -17,13 +17,18 @@ class ContextBuilder:
 
         parts = []
 
-        for chunk in chunks:
+        for i, item in enumerate(chunks, start=1):
+
+            chunk = item[0] if isinstance(item, tuple) else item
 
             parts.append(
                 f"""
 ==========================
-Section:
+Source {i}:
 {chunk.title}
+
+Pages:
+{chunk.page_start}-{chunk.page_end}
 
 Content:
 {chunk.text}
