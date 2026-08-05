@@ -121,6 +121,8 @@
 # if __name__ == "__main__":
 #     main()
 
+import argparse
+import os
 from pathlib import Path
 
 from src.parser.paper_parser import PaperParser
@@ -128,9 +130,18 @@ from src.exporters.json_exporter import JSONExporter
 from src.exporters.markdown_exporter import MarkdownExporter
 from src.vectorstore.vector_store import VectorStore
 from src.search.semantic_search import SemanticSearcher
-from src.chat.chat_engine import ChatEngine
 
 def main():
+
+    parser = argparse.ArgumentParser(
+        description="Parse a paper and optionally start chat."
+    )
+    parser.add_argument(
+        "--chat",
+        action="store_true",
+        help="Start the interactive chat loop after parsing."
+    )
+    args = parser.parse_args()
 
     print("=" * 60)
     print("ScholarMind AI")
@@ -180,23 +191,33 @@ def main():
     # Parse Paper
     # --------------------------------------------------
 
-    parser = PaperParser()
+    paper_parser = PaperParser()
 
-    paper = parser.parse(PDF_PATH)
-    
+    paper = paper_parser.parse(PDF_PATH)
 
-    vector_db = VectorStore()
+    OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-    vector_db.build(
+    MarkdownExporter.export(
+        paper,
+        OUTPUT_FOLDER / "paper.md"
+    )
+
+    JSONExporter.export(
+        paper,
+        OUTPUT_FOLDER / "paper.json"
+    )
+
+    searcher = None
+    if paper.chunks:
+        vector_db = VectorStore()
+        vector_db.build(paper.chunks)
+        vector_db.save("indexes")
+        searcher = SemanticSearcher(
+            vector_db,
             paper.chunks
         )
-    searcher = SemanticSearcher(
-        vector_db,
-        paper.chunks
-    )
-    vector_db.save(
-                "indexes"
-            )
+    else:
+        print("\nNo chunks were generated, so semantic search was skipped.")
 
     # --------------------------------------------------
     # Display Results
@@ -263,8 +284,11 @@ def main():
 
     print("\nDOCUMENT STATISTICS")
     print("-" * 60)
-    for key, value in paper.statistics.items():
-        print(f"{key:<30} {value}")
+    if paper.statistics:
+        for key, value in paper.statistics.items():
+            print(f"{key:<30} {value}")
+    else:
+        print("No document statistics available.")
 
 
     print()
@@ -275,107 +299,59 @@ def main():
 
     print("="*60)
 
-    results = searcher.search(
-        "conference paper formatting",
-        top_k=3
-    )
+    if searcher is not None:
+        results = searcher.search(
+            "conference paper formatting",
+            top_k=3
+        )
 
-    for chunk, score in results:
+        for chunk, score in results:
 
-        print()
+            print()
+            print(chunk.title)
+            print(score)
+            print(chunk.text[:250])
 
-        print(chunk.title)
+    if args.chat:
 
-        print(score)
+        from src.chat.chat_engine import ChatEngine
 
-        print(chunk.text[:250])
-    # --------------------------------------------------
-    # Export
-    # --------------------------------------------------
-    # chat = ChatEngine(
-    # semantic_searcher=
-    # )while True:
+        if not os.getenv("GEMINI_API_KEY"):
+            print("\nChat skipped because GEMINI_API_KEY is not set.")
+            return
 
-    # question = input(
-    #     "\nAsk > "
-    # )
+        if searcher is None:
+            print("\nChat skipped because no chunks were generated.")
+            return
 
-    # if question.lower() in [
-    #     "exit",
-    #     "quit"
-    # ]:
-    #     break
+        chat = ChatEngine(
+            semantic_searcher=searcher
+        )
 
-    # result = chat.ask(question)
+        print("\n" + "=" * 60)
+        print("ScholarMind AI Chat")
+        print("=" * 60)
+        print("Type 'exit' or 'quit' to leave.\n")
 
-    # print("\nAnswer\n")
+        while True:
 
-    # print(result["answer"])
+            question = input("Ask > ").strip()
 
-# --------------------------------------------------
-# Chat
-# --------------------------------------------------
+            if question.lower() in ["exit", "quit"]:
+                break
 
-    chat = ChatEngine(
-        semantic_searcher=searcher
-    )
+            try:
 
-    print("\n" + "=" * 60)
-    print("ScholarMind AI Chat")
-    print("=" * 60)
-    print("Type 'exit' or 'quit' to leave.\n")
+                result = chat.ask(question)
 
-    while True:
+                print("\n" + "=" * 60)
+                print("ANSWER")
+                print("=" * 60)
+                print(result["answer"])
 
-        question = input("Ask > ").strip()
+            except Exception as e:
 
-        if question.lower() in ["exit", "quit"]:
-            break
-
-        try:
-
-            result = chat.ask(question)
-
-            print("\n" + "=" * 60)
-            print("ANSWER")
-            print("=" * 60)
-            print(result["answer"])
-
-        except Exception as e:
-
-            print("\nError:", e)
-
-    # --------------------------------------------------
-    # Export Results
-    # --------------------------------------------------
-
-    MarkdownExporter.export(
-        paper,
-        OUTPUT_FOLDER / "paper.md"
-    )
-
-    JSONExporter.export(
-        paper,
-        OUTPUT_FOLDER / "paper.json"
-    )
-
-    print("\nMarkdown exported successfully.")
-    print(
-        f"JSON exported successfully: "
-        f"{OUTPUT_FOLDER / 'paper.json'}"
-    )
-
-    print("\nParsing completed successfully.")
-
-    MarkdownExporter.export(
-        paper,
-        OUTPUT_FOLDER / "paper.md"
-    )
-
-    JSONExporter.export(
-        paper,
-        OUTPUT_FOLDER / "paper.json"
-    )
+                print("\nError:", e)
 
     print("\nParsing completed successfully.")
 

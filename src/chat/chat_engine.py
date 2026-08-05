@@ -1,4 +1,4 @@
-from src.retrieval import Retriever
+from src.retrieval.retriever import Retriever
 
 from src.qa.context_builder import ContextBuilder
 

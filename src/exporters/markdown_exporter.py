@@ -42,7 +42,8 @@ class MarkdownExporter:
 
             for section in paper.sections:
 
-                lines.append(f"### {section}")
+                lines.append(f"### {section.title}")
+                lines.append(section.content)
 
         else:
 
@@ -57,7 +58,7 @@ class MarkdownExporter:
 
             for ref in paper.references:
 
-                lines.append(f"- {ref}")
+                lines.append(f"- [{ref.number}] {ref.raw_text}")
 
         else:
 
