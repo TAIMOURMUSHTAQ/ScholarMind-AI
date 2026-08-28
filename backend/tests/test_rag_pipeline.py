@@ -3,7 +3,12 @@ from unittest.mock import patch
 import pytest
 
 from app.exceptions import EmptyQuestionError
-from app.rag.rag_pipeline import RAGPipeline
+from app.rag.rag_pipeline import RAGPipeline, compare_key
+
+
+def test_compare_key_is_order_independent():
+    assert compare_key(["b", "a"]) == compare_key(["a", "b"])
+    assert compare_key(["a", "b"]) == "compare_a_b"
 
 
 @pytest.fixture(autouse=True)

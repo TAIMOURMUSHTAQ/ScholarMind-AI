@@ -70,3 +70,54 @@ class GeminiClient:
             "Gemini's free-tier rate limit was hit and retries were exhausted. "
             "Please wait a minute and try again."
         ) from last_error
+
+    def chat_stream(
+        self,
+        system_prompt: str,
+        history: list[dict],
+        message: str,
+        max_retries: int = 3,
+        base_delay_seconds: float = 2.0,
+    ):
+        """Like `chat`, but yields text deltas as they arrive.
+
+        Retry/backoff covers establishing the stream (the common failure
+        mode: a 429 on the initial request). A network error partway
+        through an already-started stream propagates to the caller as-is,
+        since resuming a partial generation isn't meaningful here.
+        """
+        if not self.available:
+            raise GeminiUnavailableError(
+                "GEMINI_API_KEY is not configured. Add it to backend/.env to enable chat "
+                "(get a free key at https://aistudio.google.com/apikey)."
+            )
+
+        model = genai.GenerativeModel(self.model_name, system_instruction=system_prompt)
+
+        last_error: Exception | None = None
+        for attempt in range(max_retries + 1):
+            try:
+                chat_session = model.start_chat(history=history)
+                response_stream = chat_session.send_message(message, stream=True)
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+                return
+            except _RETRYABLE as exc:
+                last_error = exc
+                if attempt < max_retries:
+                    delay = base_delay_seconds * (2**attempt)
+                    logger.warning(
+                        "Gemini stream rate-limited/unavailable (attempt %s/%s); retrying in %.1fs",
+                        attempt + 1, max_retries, delay,
+                    )
+                    time.sleep(delay)
+            except GoogleAPICallError as exc:
+                raise GeminiUnavailableError(f"Gemini API error: {exc}") from exc
+            except Exception as exc:
+                raise GeminiUnavailableError(f"Unexpected error calling Gemini: {exc}") from exc
+
+        raise GeminiRateLimitError(
+            "Gemini's free-tier rate limit was hit and retries were exhausted. "
+            "Please wait a minute and try again."
+        ) from last_error

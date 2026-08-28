@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { PaperSummary } from "../api/client";
 
@@ -15,30 +16,101 @@ const STATUS_LABEL: Record<PaperSummary["status"], string> = {
 
 interface Props {
   paper: PaperSummary;
-  onDelete: (id: string) => void;
+  onRequestDelete: (id: string) => void;
+  onRename: (id: string, title: string) => void;
+  compareMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export default function PaperCard({ paper, onDelete }: Props) {
-  const card = (
-    <div className="group flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+export default function PaperCard({ paper, onRequestDelete, onRename, compareMode, selected, onToggleSelect }: Props) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(paper.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  const commitRename = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== paper.title) onRename(paper.id, trimmed);
+  };
+
+  const inner = (
+    <div
+      className={`group flex h-full flex-col justify-between rounded-2xl border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        selected ? "border-brand-400 ring-2 ring-brand-100" : "border-slate-200"
+      }`}
+    >
       <div>
         <div className="mb-2 flex items-start justify-between gap-2">
-          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[paper.status]}`}>
-            {STATUS_LABEL[paper.status]}
-          </span>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(paper.id);
-            }}
-            className="rounded-md p-1 text-slate-300 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-            title="Delete paper"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {compareMode && paper.status === "ready" && (
+              <input
+                type="checkbox"
+                checked={!!selected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onToggleSelect?.(paper.id);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+              />
+            )}
+            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[paper.status]}`}>
+              {STATUS_LABEL[paper.status]}
+            </span>
+          </div>
+          {!compareMode && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRequestDelete(paper.id);
+              }}
+              className="rounded-md p-1 text-slate-300 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+              title="Delete paper"
+            >
+              ✕
+            </button>
+          )}
         </div>
-        <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{paper.title}</h3>
+
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onClick={(e) => e.preventDefault()}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitRename();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            className="w-full rounded-md border border-brand-300 px-1.5 py-0.5 text-base font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-brand-100"
+          />
+        ) : (
+          <div className="flex items-start gap-1.5">
+            <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{paper.title}</h3>
+            {!compareMode && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDraft(paper.title);
+                  setEditing(true);
+                }}
+                title="Rename"
+                className="mt-0.5 shrink-0 rounded p-0.5 text-slate-300 opacity-0 transition-opacity hover:text-slate-500 group-hover:opacity-100"
+              >
+                ✎
+              </button>
+            )}
+          </div>
+        )}
+
         {paper.authors.length > 0 && (
           <p className="mt-1 line-clamp-1 text-sm text-slate-500">{paper.authors.join(", ")}</p>
         )}
@@ -53,8 +125,17 @@ export default function PaperCard({ paper, onDelete }: Props) {
     </div>
   );
 
-  if (paper.status !== "ready") {
-    return <div className="cursor-default">{card}</div>;
+  if (paper.status !== "ready" || editing) {
+    return <div className="cursor-default">{inner}</div>;
   }
-  return <Link to={`/papers/${paper.id}`}>{card}</Link>;
+
+  if (compareMode) {
+    return (
+      <div className="cursor-pointer" onClick={() => onToggleSelect?.(paper.id)}>
+        {inner}
+      </div>
+    );
+  }
+
+  return <Link to={`/papers/${paper.id}`}>{inner}</Link>;
 }

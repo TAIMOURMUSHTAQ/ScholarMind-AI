@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from app.config import CORS_ORIGINS
 from app.exceptions import InvalidPDFError, PaperNotFoundError, ScannedPDFError, ScholarMindError
 from app.logger import logger
-from app.routes import chat, papers
+from app.routes import chat, compare, papers
 
 app = FastAPI(
     title="ScholarMind AI",
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(papers.router)
 app.include_router(chat.router)
+app.include_router(compare.router)
 
 
 @app.exception_handler(InvalidPDFError)

@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api, type PaperSummary } from "../api/client";
 import UploadDropzone from "../components/UploadDropzone";
 import PaperCard from "../components/PaperCard";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const POLL_INTERVAL_MS = 3000;
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [papers, setPapers] = useState<PaperSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
@@ -39,7 +45,10 @@ export default function Dashboard() {
     await refresh();
   };
 
-  const handleDelete = async (id: string) => {
+  const confirmDelete = async () => {
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    if (!id) return;
     setPapers((prev) => prev?.filter((p) => p.id !== id) ?? null);
     try {
       await api.deletePaper(id);
@@ -47,6 +56,26 @@ export default function Dashboard() {
       refresh();
     }
   };
+
+  const handleRename = async (id: string, title: string) => {
+    setPapers((prev) => prev?.map((p) => (p.id === id ? { ...p, title } : p)) ?? null);
+    try {
+      await api.renamePaper(id, title);
+    } catch {
+      refresh();
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const exitCompareMode = () => {
+    setCompareMode(false);
+    setSelectedIds([]);
+  };
+
+  const paperBeingDeleted = papers?.find((p) => p.id === pendingDeleteId);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -65,7 +94,19 @@ export default function Dashboard() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-900">Your Library</h2>
-        {papers && <span className="text-sm text-slate-400">{papers.length} paper{papers.length === 1 ? "" : "s"}</span>}
+        <div className="flex items-center gap-3">
+          {papers && !compareMode && <span className="text-sm text-slate-400">{papers.length} paper{papers.length === 1 ? "" : "s"}</span>}
+          {papers && papers.filter((p) => p.status === "ready").length >= 2 && (
+            <button
+              onClick={() => (compareMode ? exitCompareMode() : setCompareMode(true))}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                compareMode ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {compareMode ? "Cancel" : "Compare papers"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-5">
@@ -92,11 +133,44 @@ export default function Dashboard() {
         {!error && papers && papers.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {papers.map((paper) => (
-              <PaperCard key={paper.id} paper={paper} onDelete={handleDelete} />
+              <PaperCard
+                key={paper.id}
+                paper={paper}
+                onRequestDelete={setPendingDeleteId}
+                onRename={handleRename}
+                compareMode={compareMode}
+                selected={selectedIds.includes(paper.id)}
+                onToggleSelect={toggleSelect}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {compareMode && selectedIds.length >= 2 && (
+        <div className="fixed inset-x-0 bottom-6 z-20 flex justify-center">
+          <button
+            onClick={() => navigate(`/compare/${selectedIds.join(",")}`)}
+            className="rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-brand-700"
+          >
+            Compare {selectedIds.length} papers →
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Delete this paper?"
+        message={
+          paperBeingDeleted
+            ? `"${paperBeingDeleted.title}" and its chat history will be permanently removed. This can't be undone.`
+            : "This can't be undone."
+        }
+        confirmLabel="Delete"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 }

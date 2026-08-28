@@ -26,6 +26,7 @@ export interface Source {
   page_end: number;
   score: number;
   preview: string;
+  paper_title?: string;
 }
 
 export interface ChatTurn {
@@ -33,6 +34,8 @@ export interface ChatTurn {
   content: string;
   sources: Source[];
 }
+
+export type ExportFormat = "markdown" | "pdf";
 
 class ApiError extends Error {
   status: number;
@@ -66,6 +69,82 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+/** Base path shared by single-paper chat (`/api/papers/{id}`) and
+ * multi-paper compare (`/api/compare/{id1,id2,...}`) - both expose the
+ * same chat/history/export/stream shape underneath. */
+export function paperChatBase(id: string): string {
+  return `/api/papers/${id}`;
+}
+
+export function compareChatBase(ids: string[]): string {
+  return `/api/compare/${ids.join(",")}`;
+}
+
+export interface StreamHandlers {
+  onSources: (sources: Source[]) => void;
+  onDelta: (text: string) => void;
+  onDone: () => void;
+  onError: (message: string) => void;
+}
+
+/** Reads a POST SSE-style stream (can't use EventSource - that's GET-only). */
+export async function streamChat(basePath: string, question: string, topK: number, handlers: StreamHandlers): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${basePath}/chat/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, top_k: topK }),
+    });
+  } catch {
+    handlers.onError("Could not reach the backend.");
+    return;
+  }
+
+  if (!res.ok || !res.body) {
+    let detail = res.statusText;
+    try {
+      detail = (await res.json()).detail || detail;
+    } catch {
+      /* ignore non-JSON error bodies */
+    }
+    handlers.onError(detail);
+    return;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let sepIndex: number;
+    while ((sepIndex = buffer.indexOf("\n\n")) !== -1) {
+      const rawEvent = buffer.slice(0, sepIndex);
+      buffer = buffer.slice(sepIndex + 2);
+
+      const eventMatch = rawEvent.match(/^event: (.+)$/m);
+      const dataMatch = rawEvent.match(/^data: (.+)$/m);
+      if (!eventMatch || !dataMatch) continue;
+
+      const event = eventMatch[1];
+      const data = JSON.parse(dataMatch[1]);
+
+      if (event === "sources") handlers.onSources(data);
+      else if (event === "delta") handlers.onDelta(data.text);
+      else if (event === "done") handlers.onDone();
+      else if (event === "error") handlers.onError(data.detail);
+    }
+  }
+}
+
+export function exportUrl(basePath: string, format: ExportFormat): string {
+  return `${API_BASE}${basePath}/chat/export?format=${format}`;
+}
+
 export const api = {
   uploadPaper: (file: File) => {
     const form = new FormData();
@@ -74,14 +153,17 @@ export const api = {
   },
   listPapers: () => request<PaperSummary[]>("/api/papers"),
   getPaper: (id: string) => request<PaperDetail>(`/api/papers/${id}`),
+  renamePaper: (id: string, title: string) =>
+    request<PaperSummary>(`/api/papers/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
   deletePaper: (id: string) => request<void>(`/api/papers/${id}`, { method: "DELETE" }),
-  chat: (id: string, question: string, top_k = 5) =>
-    request<{ answer: string; sources: Source[] }>(`/api/papers/${id}/chat`, {
+
+  chat: (basePath: string, question: string, top_k = 5) =>
+    request<{ answer: string; sources: Source[] }>(`${basePath}/chat`, {
       method: "POST",
       body: JSON.stringify({ question, top_k }),
     }),
-  getChatHistory: (id: string) => request<ChatTurn[]>(`/api/papers/${id}/chat/history`),
-  clearChatHistory: (id: string) => request<void>(`/api/papers/${id}/chat`, { method: "DELETE" }),
+  getChatHistory: (basePath: string) => request<ChatTurn[]>(`${basePath}/chat/history`),
+  clearChatHistory: (basePath: string) => request<void>(`${basePath}/chat`, { method: "DELETE" }),
 };
 
 export { ApiError };

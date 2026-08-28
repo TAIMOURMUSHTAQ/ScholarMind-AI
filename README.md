@@ -1,6 +1,6 @@
 # ScholarMind AI
 
-A RAG-based research assistant: upload a paper PDF, get a structured summary card, then chat with it, grounded in retrieval over the paper's own text, with source snippets and conversation memory. No paid infrastructure required.
+A RAG-based research assistant: upload a paper PDF, get a structured summary card, then chat with it, grounded in retrieval over the paper's own text, with streamed answers, source snippets, and conversation memory. Rename or delete papers in your library, export any chat as Markdown or PDF, or select multiple papers to ask comparative questions across them. No paid infrastructure required.
 
 > This is a rebuild of an earlier prototype that had drifted into being a static PDF metadata parser. The extraction logic from that prototype was kept and improved; the RAG pipeline, FastAPI backend, and React frontend are new. See `docs/` for the original project's design notes.
 
@@ -32,6 +32,9 @@ flowchart LR
 - **Structure-aware chunking**: chunks never cross section boundaries, split on sentence boundaries (not blind word counts), and carry ~40 words of overlap between consecutive chunks in a long section so context isn't severed right at a chunk edge.
 - **Gemini free tier** (`gemini-3.6-flash` by default; check `GEMINI_MODEL` in `.env.example` against whatever the current free-tier flash model is, since Google retires model IDs over time) for chat completions, with exponential-backoff retry on rate-limit/`503` errors before surfacing a clear message to the user.
 - **Conversation memory** is replayed to Gemini as chat history on every turn, so follow-up questions ("what dataset did *they* use?") resolve correctly instead of each question being answered in isolation.
+- **Streaming answers** over Server-Sent Events: retrieval happens eagerly so sources render immediately, then Gemini's response streams in token-by-token. It's a POST endpoint (the request body carries the question), so the browser can't use the native `EventSource` API (GET-only) - the frontend reads the response body as a stream and parses the same `event:`/`data:` framing by hand.
+- **Cross-paper comparison** reuses the exact same chat/history/export code path as single-paper chat: `/api/compare/{id1,id2,...}/chat` retrieves from each paper's own FAISS index independently, labels every source with which paper it came from, and stores its conversation under a synthetic key so the comparison has its own persistent history distinct from either paper's individual chat.
+- **Chat export** (Markdown or PDF) is generated from the same stored conversation turns used for the on-screen history, so what you export always matches what you see. PDF generation uses fpdf2 (pure Python, no native build step, consistent with the FAISS-over-Chroma reasoning above).
 
 ## Project structure
 
@@ -46,18 +49,20 @@ backend/
     rag/                  Retrieval-augmented chat
       chunking.py, embeddings.py, vector_store.py, gemini_client.py,
       conversation_memory.py, rag_pipeline.py
+      export.py            Markdown/PDF transcript export
     storage/paper_store.py  JSON-backed paper registry
-    routes/                papers.py, chat.py
+    routes/                papers.py, chat.py, compare.py
     ingestion.py           Upload -> parse -> chunk -> embed -> index
   tests/                 pytest suite (Gemini calls are mocked)
   data/                  uploads, conversations, paper registry (gitignored)
   vector_store_data/     persisted FAISS indexes + metadata (gitignored)
 frontend/
   src/
-    api/client.ts         typed fetch wrapper
-    pages/Dashboard.tsx    upload + library
-    pages/PaperView.tsx    summary card + chat
-    components/            UploadDropzone, PaperCard, ChatPanel, Header
+    api/client.ts         typed fetch wrapper, incl. SSE stream parsing
+    pages/Dashboard.tsx    upload + library + compare-mode selection
+    pages/PaperView.tsx    summary card + chat + rename
+    pages/ComparePage.tsx  multi-paper chat
+    components/            UploadDropzone, PaperCard, ChatPanel, ConfirmDialog, Header
 docs/                    original project's design notes (kept for history)
 ```
 
@@ -112,10 +117,14 @@ Gemini calls are mocked in tests, so running the suite does not consume API quot
 | POST | `/api/papers/upload` | Upload a PDF (multipart). Returns immediately with status `processing`; parsing/indexing runs in the background. |
 | GET | `/api/papers` | List all papers (library view). |
 | GET | `/api/papers/{id}` | Full summary card: metadata, abstract, sections, stats. |
+| PATCH | `/api/papers/{id}` | Rename a paper. |
 | DELETE | `/api/papers/{id}` | Remove a paper, its vectors, and its conversation history. |
 | POST | `/api/papers/{id}/chat` | Ask a question; returns a grounded answer + source snippets. |
+| POST | `/api/papers/{id}/chat/stream` | Same as above, streamed over Server-Sent Events (`sources` event first, then `delta` events, then `done`/`error`). |
 | GET | `/api/papers/{id}/chat/history` | Full conversation so far. |
 | DELETE | `/api/papers/{id}/chat` | Clear conversation memory for a paper. |
+| GET | `/api/papers/{id}/chat/export?format=markdown\|pdf` | Download the conversation as a file. |
+| POST/GET/DELETE | `/api/compare/{id1,id2,...}/chat[/stream\|/history\|/export]` | Same shape as the single-paper chat endpoints, scoped to 2+ papers at once; sources are labeled with which paper they came from. |
 
 ## Error handling
 
@@ -131,6 +140,6 @@ Gemini calls are mocked in tests, so running the suite does not consume API quot
 
 ## Known limitations
 
-- Metadata/section extraction is heuristic (font size, numbered-heading regex) and tuned to common single- and IEEE-style two-column layouts, so it can misfire on unusual PDF layouts. This only affects the summary card; chat answers are grounded in retrieved chunk text regardless.
-- Multi-paper cross-document querying ("compare the methodology of these two papers") is not implemented; each chat is scoped to one paper. The library view (list/open/delete multiple papers) is in place as the foundation for this stretch goal.
-- Chat responses are not streamed token-by-token; the full answer returns once generation completes.
+- Metadata/section extraction is heuristic (font size, numbered-heading regex) and tuned to common single- and IEEE-style two-column layouts, so it can misfire on unusual PDF layouts (rename the paper manually if the extracted title is wrong). This only affects the summary card; chat answers are grounded in retrieved chunk text regardless.
+- Streaming retry/backoff only covers establishing the connection; a network error partway through an already-started stream propagates to the UI as-is rather than resuming.
+- PDF export uses fpdf2's core fonts, which only cover Latin-1; characters outside that range are replaced rather than rendered. The Markdown export has no such limitation.

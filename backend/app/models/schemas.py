@@ -36,6 +36,10 @@ class ChatRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=15)
 
 
+class RenamePaperRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=300)
+
+
 class SourceOut(BaseModel):
     rank: int
     section_title: str
@@ -43,6 +47,7 @@ class SourceOut(BaseModel):
     page_end: int
     score: float
     preview: str
+    paper_title: Optional[str] = None
 
 
 class ChatTurnOut(BaseModel):

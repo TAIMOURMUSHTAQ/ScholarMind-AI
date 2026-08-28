@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
 
 from app.config import MAX_UPLOAD_MB, UPLOADS_DIR
 from app.ingestion import delete_paper_files, ingest_paper
-from app.models.schemas import PaperDetail, PaperSummary
+from app.models.schemas import PaperDetail, PaperSummary, RenamePaperRequest
 from app.rag.conversation_memory import ConversationMemory
 from app.storage.paper_store import PaperStore
 
@@ -67,6 +67,14 @@ def get_paper(paper_id: str):
         statistics=record.get("statistics", {}),
         section_titles=record.get("section_titles", []),
     )
+
+
+@router.patch("/{paper_id}", response_model=PaperSummary)
+def rename_paper(paper_id: str, body: RenamePaperRequest):
+    record = PaperStore.rename(paper_id, body.title.strip())
+    if record is None:
+        raise HTTPException(status_code=404, detail="No paper found with that id.")
+    return _to_summary(record)
 
 
 @router.delete("/{paper_id}", status_code=204)

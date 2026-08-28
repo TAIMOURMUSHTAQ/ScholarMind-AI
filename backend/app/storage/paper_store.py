@@ -92,3 +92,14 @@ class PaperStore:
         data = _read_all()
         data.pop(paper_id, None)
         _write_all(data)
+
+    @staticmethod
+    def rename(paper_id: str, new_title: str) -> dict | None:
+        data = _read_all()
+        record = data.get(paper_id)
+        if record is None:
+            return None
+        record["title"] = new_title
+        data[paper_id] = record
+        _write_all(data)
+        return record
