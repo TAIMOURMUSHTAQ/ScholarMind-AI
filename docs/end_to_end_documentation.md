@@ -1,5 +1,7 @@
 # ScholarMind AI End-to-End Documentation
 
+> **Historical note:** this describes the original CLI-only prototype, superseded by the `backend/`/`frontend/` rebuild. See the top-level [README.md](../README.md) for the current architecture.
+
 ## Overview
 
 ScholarMind AI is a research-oriented document intelligence assistant built around academic PDFs. The current product base is designed to:

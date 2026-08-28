@@ -35,6 +35,7 @@ flowchart LR
 - **Streaming answers** over Server-Sent Events: retrieval happens eagerly so sources render immediately, then Gemini's response streams in token-by-token. It's a POST endpoint (the request body carries the question), so the browser can't use the native `EventSource` API (GET-only) - the frontend reads the response body as a stream and parses the same `event:`/`data:` framing by hand.
 - **Cross-paper comparison** reuses the exact same chat/history/export code path as single-paper chat: `/api/compare/{id1,id2,...}/chat` retrieves from each paper's own FAISS index independently, labels every source with which paper it came from, and stores its conversation under a synthetic key so the comparison has its own persistent history distinct from either paper's individual chat.
 - **Chat export** (Markdown or PDF) is generated from the same stored conversation turns used for the on-screen history, so what you export always matches what you see. PDF generation uses fpdf2 (pure Python, no native build step, consistent with the FAISS-over-Chroma reasoning above) with the bundled DejaVu Sans font embedded for full Unicode text, rather than the Latin-1-only core fonts fpdf2 ships by default.
+- **Icons are hand-drawn inline SVG** (`frontend/src/components/icons.tsx`), not emoji or raster PNGs: crisp at any DPI, themeable via `currentColor`, no extra image request or package, and consistent with how professional web UIs are actually built.
 
 ## Project structure
 
@@ -64,6 +65,7 @@ frontend/
     pages/PaperView.tsx    summary card + chat + rename
     pages/ComparePage.tsx  multi-paper chat
     components/            UploadDropzone, PaperCard, ChatPanel, ConfirmDialog, Header
+    components/icons.tsx   hand-drawn inline SVG icon set (no emoji, no image files)
 docs/                    original project's design notes (kept for history)
 ```
 
@@ -75,9 +77,11 @@ Go to https://aistudio.google.com/apikey, sign in, and create a key. The free ti
 
 ### 2. Backend
 
+**Requires Python 3.13** (not 3.14+ yet) - `faiss-cpu`, `pydantic-core`, and `tokenizers` don't ship prebuilt wheels for 3.14 on Windows at the time of writing, and building them from source needs the MSVC C++ Build Tools installed. If you only have a newer Python, install 3.13 alongside it (the Windows `py` launcher makes this easy: `py -3.13 -m venv venv`).
+
 ```bash
 cd backend
-python -m venv venv
+python -m venv venv            # or: py -3.13 -m venv venv
 source venv/Scripts/activate   # Windows Git Bash; use venv\Scripts\activate.bat for cmd.exe
 pip install -r requirements.txt
 

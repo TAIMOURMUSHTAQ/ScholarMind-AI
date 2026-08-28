@@ -1,5 +1,7 @@
 # Module 1 - PDF Reader
 
+> **Historical note:** early design notes from the original CLI-only prototype. See the top-level [README.md](../README.md) for the current architecture.
+
 ## Goal
 Build a reusable PDF Reader.
 

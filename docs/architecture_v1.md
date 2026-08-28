@@ -1,3 +1,5 @@
+> **Historical note:** this describes the original CLI-only prototype (`src/`), superseded by the `backend/`/`frontend/` rebuild. See the top-level [README.md](../README.md) for the current architecture.
+
 Project Architecture
 📁 ScholarMind-AI
 
