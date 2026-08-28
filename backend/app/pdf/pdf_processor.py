@@ -64,7 +64,7 @@ class PDFProcessor:
         avg_chars_per_page = len(full_text) / doc.page_count
         if avg_chars_per_page < MIN_CHARS_PER_PAGE:
             raise ScannedPDFError(
-                "This PDF has little or no extractable text — it looks like a "
+                "This PDF has little or no extractable text - it looks like a "
                 "scanned or image-only document. ScholarMind AI needs a text "
                 "layer to work; try running it through OCR first."
             )

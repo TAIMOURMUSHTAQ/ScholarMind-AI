@@ -71,7 +71,7 @@ export default function Dashboard() {
       <div className="mt-5">
         {error && (
           <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error} — is the backend running at the configured API URL?
+            {error} - is the backend running at the configured API URL?
           </div>
         )}
 
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
         {!error && papers?.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-400">
-            No papers yet — upload one above to get started.
+            No papers yet, upload one above to get started.
           </div>
         )}
 

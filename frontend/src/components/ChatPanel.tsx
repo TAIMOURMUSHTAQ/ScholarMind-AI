@@ -54,7 +54,7 @@ export default function ChatPanel({ paperId }: Props) {
     <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-semibold text-slate-900">Chat with this paper</h2>
-        <p className="text-xs text-slate-500">Answers are grounded in the paper's text — not general knowledge.</p>
+        <p className="text-xs text-slate-500">Answers are grounded in the paper's text, not general knowledge.</p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
@@ -129,7 +129,7 @@ function ChatBubble({ turn }: { turn: ChatTurn }) {
             {turn.sources.map((source) => (
               <details key={source.rank} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs">
                 <summary className="cursor-pointer select-none font-medium text-slate-600">
-                  Source {source.rank} — {source.section_title} (p.{source.page_start}-{source.page_end}) ·{" "}
+                  Source {source.rank} - {source.section_title} (p.{source.page_start}-{source.page_end}) ·{" "}
                   {Math.round(source.score * 100)}% match
                 </summary>
                 <p className="mt-1.5 text-slate-500">{source.preview}…</p>

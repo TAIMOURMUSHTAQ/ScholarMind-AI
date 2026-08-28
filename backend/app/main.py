@@ -9,7 +9,7 @@ from app.routes import chat, papers
 
 app = FastAPI(
     title="ScholarMind AI",
-    description="Upload a research paper, get a structured summary, and chat with it — grounded in retrieval, not hallucination.",
+    description="Upload a research paper, get a structured summary, and chat with it - grounded in retrieval, not hallucination.",
     version="2.0.0",
 )
 

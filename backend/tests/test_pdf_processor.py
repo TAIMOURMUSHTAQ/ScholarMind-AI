@@ -11,7 +11,7 @@ SAMPLE_PAPER = SAMPLE_DIR / "sample_conference_paper.pdf"
 
 
 def _make_image_only_pdf(path: Path) -> None:
-    """Build a PDF with a page containing only a drawing, no text layer at all —
+    """Build a PDF with a page containing only a drawing, no text layer at all -
     a stand-in for a scanned/image-only document."""
     doc = pymupdf.open()
     page = doc.new_page()

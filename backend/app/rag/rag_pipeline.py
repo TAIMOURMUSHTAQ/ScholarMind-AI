@@ -22,7 +22,7 @@ def _build_context(matches: list[dict]) -> str:
     parts = []
     for i, match in enumerate(matches, start=1):
         parts.append(
-            f"Source {i} — {match['section_title']} (pages {match['page_start']}-{match['page_end']}):\n{match['text']}"
+            f"Source {i} - {match['section_title']} (pages {match['page_start']}-{match['page_end']}):\n{match['text']}"
         )
     return "\n\n".join(parts)
 

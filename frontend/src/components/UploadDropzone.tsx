@@ -64,7 +64,7 @@ export default function UploadDropzone({ onUpload }: Props) {
           <>
             <span className="text-4xl">📄</span>
             <p className="text-base font-semibold text-slate-800">Drop a research paper PDF here</p>
-            <p className="text-sm text-slate-500">or click to browse — we'll parse it and get it ready to chat with</p>
+            <p className="text-sm text-slate-500">or click to browse, we'll parse it and get it ready to chat with</p>
           </>
         )}
       </div>

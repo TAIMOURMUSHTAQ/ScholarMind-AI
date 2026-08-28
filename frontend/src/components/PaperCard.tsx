@@ -47,7 +47,7 @@ export default function PaperCard({ paper, onDelete }: Props) {
         )}
       </div>
       <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-        <span>{paper.num_pages ? `${paper.num_pages} pages` : "—"}</span>
+        <span>{paper.num_pages ? `${paper.num_pages} pages` : "-"}</span>
         <span>{new Date(paper.upload_time).toLocaleDateString()}</span>
       </div>
     </div>

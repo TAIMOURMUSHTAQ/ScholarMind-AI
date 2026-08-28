@@ -1,4 +1,4 @@
-"""Environment-driven configuration. No secrets hardcoded — see .env.example."""
+"""Environment-driven configuration. No secrets hardcoded - see .env.example."""
 import os
 from pathlib import Path
 from dotenv import load_dotenv

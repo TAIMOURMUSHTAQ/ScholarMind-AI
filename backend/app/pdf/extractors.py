@@ -2,7 +2,7 @@
 
 These are deliberately simple, regex/font-size heuristics tuned to common
 single-column and IEEE-style two-column academic PDFs. They are the
-weakest, most format-specific part of the pipeline — expected to misfire
+weakest, most format-specific part of the pipeline - expected to misfire
 on unusual layouts (see README's "Known limitations" section) but good
 enough to power the up-front "paper summary card"; the chat itself does
 not depend on their accuracy since it's grounded in retrieved chunk text.

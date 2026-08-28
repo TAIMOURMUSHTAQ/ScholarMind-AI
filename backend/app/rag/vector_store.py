@@ -4,14 +4,14 @@ Originally built on ChromaDB, but `chroma-hnswlib` (Chroma's local HNSW
 backend) ships no prebuilt wheel for Python 3.13 on Windows and requires
 the MSVC C++ Build Tools to compile from source, which this environment
 doesn't have. `faiss-cpu` does publish a matching `cp313-win_amd64` wheel
-and is a proven quantity here — the original prototype already used it
+and is a proven quantity here - the original prototype already used it
 successfully on this exact machine. Same "free, local, file-based, no
 server" bar as Chroma, just a different backend.
 
 This also fixes the original prototype's bug where `vector_store.save()`
 only persisted the raw FAISS index, leaving the reader to assume the
 *same* in-memory chunk list, in the *same* order, was still around to
-zip back up with search results — silently wrong the moment a process
+zip back up with search results - silently wrong the moment a process
 restarted with a different chunk ordering. Here the index and its
 per-vector metadata (chunk text, section, pages) are always written
 together in `index_chunks` and always read back together in `query`, so
