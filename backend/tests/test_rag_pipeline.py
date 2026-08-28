@@ -1,0 +1,52 @@
+from unittest.mock import patch
+
+import pytest
+
+from app.exceptions import EmptyQuestionError
+from app.rag.rag_pipeline import RAGPipeline
+
+
+@pytest.fixture(autouse=True)
+def clean_conversation(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.rag.conversation_memory.CONVERSATIONS_DIR", tmp_path)
+    yield
+
+
+def test_ask_raises_on_empty_question():
+    pipeline = RAGPipeline()
+    with pytest.raises(EmptyQuestionError):
+        pipeline.ask("paper-1", "   ")
+
+
+@patch("app.rag.rag_pipeline.VectorStore.query")
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat")
+def test_ask_grounds_answer_in_retrieved_chunks(mock_chat, mock_embed, mock_query):
+    mock_query.return_value = [
+        {"text": "The dataset used was ImageNet.", "section_title": "Experiments", "page_start": 3, "page_end": 3, "score": 0.9}
+    ]
+    mock_chat.return_value = "The paper uses ImageNet (Source 1)."
+
+    result = RAGPipeline().ask("paper-1", "What dataset did they use?", top_k=3)
+
+    assert result["answer"] == "The paper uses ImageNet (Source 1)."
+    assert result["sources"][0]["section_title"] == "Experiments"
+
+    # Gemini must have been called with the retrieved passage in context, not
+    # left to hallucinate.
+    _, kwargs = mock_chat.call_args
+    called_message = mock_chat.call_args.args[2]
+    assert "ImageNet" in called_message
+
+
+@patch("app.rag.rag_pipeline.VectorStore.query", return_value=[])
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat")
+def test_ask_with_no_matches_still_calls_gemini_with_empty_context_notice(mock_chat, mock_embed, mock_query):
+    mock_chat.return_value = "I couldn't find this information in the paper."
+
+    result = RAGPipeline().ask("paper-1", "Unrelated question?", top_k=3)
+
+    assert result["sources"] == []
+    called_message = mock_chat.call_args.args[2]
+    assert "No relevant passages" in called_message

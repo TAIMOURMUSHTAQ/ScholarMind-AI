@@ -1,7 +1,0 @@
-fitz
-pymupdf
-faiss-cpu
-numpy
-sentence-transformers
-google-generativeai
-python-dotenv
