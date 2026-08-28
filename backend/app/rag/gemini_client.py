@@ -81,10 +81,13 @@ class GeminiClient:
     ):
         """Like `chat`, but yields text deltas as they arrive.
 
-        Retry/backoff covers establishing the stream (the common failure
-        mode: a 429 on the initial request). A network error partway
-        through an already-started stream propagates to the caller as-is,
-        since resuming a partial generation isn't meaningful here.
+        Retry/backoff only applies before the first token of an attempt is
+        yielded (the common failure mode: a 429 on the initial request).
+        Once a token has been sent to the caller it can't be un-sent, so a
+        retryable error after that point does NOT restart the stream from
+        scratch (which would duplicate/garble what the client already
+        rendered) - it raises instead, and the caller keeps whatever
+        partial answer streamed in.
         """
         if not self.available:
             raise GeminiUnavailableError(
@@ -96,25 +99,42 @@ class GeminiClient:
 
         last_error: Exception | None = None
         for attempt in range(max_retries + 1):
+            yielded_any = False
             try:
                 chat_session = model.start_chat(history=history)
                 response_stream = chat_session.send_message(message, stream=True)
                 for chunk in response_stream:
                     if chunk.text:
+                        yielded_any = True
                         yield chunk.text
                 return
             except _RETRYABLE as exc:
                 last_error = exc
+                if yielded_any:
+                    raise GeminiUnavailableError(
+                        "The connection to Gemini dropped partway through the response. "
+                        "What generated so far is kept; please ask again to continue."
+                    ) from exc
                 if attempt < max_retries:
                     delay = base_delay_seconds * (2**attempt)
                     logger.warning(
-                        "Gemini stream rate-limited/unavailable (attempt %s/%s); retrying in %.1fs",
+                        "Gemini stream rate-limited/unavailable before any output (attempt %s/%s); retrying in %.1fs",
                         attempt + 1, max_retries, delay,
                     )
                     time.sleep(delay)
             except GoogleAPICallError as exc:
+                if yielded_any:
+                    raise GeminiUnavailableError(
+                        f"Gemini API error partway through the response: {exc}. "
+                        "What generated so far is kept; please ask again to continue."
+                    ) from exc
                 raise GeminiUnavailableError(f"Gemini API error: {exc}") from exc
             except Exception as exc:
+                if yielded_any:
+                    raise GeminiUnavailableError(
+                        f"Unexpected error partway through the response: {exc}. "
+                        "What generated so far is kept; please ask again to continue."
+                    ) from exc
                 raise GeminiUnavailableError(f"Unexpected error calling Gemini: {exc}") from exc
 
         raise GeminiRateLimitError(

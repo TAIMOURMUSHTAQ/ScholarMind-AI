@@ -4,6 +4,7 @@ import { api, type PaperSummary } from "../api/client";
 import UploadDropzone from "../components/UploadDropzone";
 import PaperCard from "../components/PaperCard";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { AlertTriangleIcon, DocumentIcon, LayersIcon } from "../components/icons";
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -79,7 +80,11 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-10 text-center">
+      <div className="relative mb-10 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-brand-200/50 via-brand-100/40 to-transparent blur-3xl"
+        />
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
           Read less. Understand more.
         </h1>
@@ -99,10 +104,11 @@ export default function Dashboard() {
           {papers && papers.filter((p) => p.status === "ready").length >= 2 && (
             <button
               onClick={() => (compareMode ? exitCompareMode() : setCompareMode(true))}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 compareMode ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "border border-slate-200 text-slate-600 hover:bg-slate-50"
               }`}
             >
+              <LayersIcon className="h-4 w-4" />
               {compareMode ? "Cancel" : "Compare papers"}
             </button>
           )}
@@ -111,7 +117,8 @@ export default function Dashboard() {
 
       <div className="mt-5">
         {error && (
-          <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertTriangleIcon className="h-4 w-4 shrink-0" />
             {error} - is the backend running at the configured API URL?
           </div>
         )}
@@ -125,7 +132,10 @@ export default function Dashboard() {
         )}
 
         {!error && papers?.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-400">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-400">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <DocumentIcon className="h-6 w-6" />
+            </span>
             No papers yet, upload one above to get started.
           </div>
         )}
@@ -151,9 +161,10 @@ export default function Dashboard() {
         <div className="fixed inset-x-0 bottom-6 z-20 flex justify-center">
           <button
             onClick={() => navigate(`/compare/${selectedIds.join(",")}`)}
-            className="rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-brand-700"
+            className="flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-brand-700"
           >
-            Compare {selectedIds.length} papers →
+            <LayersIcon className="h-4 w-4" />
+            Compare {selectedIds.length} papers
           </button>
         </div>
       )}

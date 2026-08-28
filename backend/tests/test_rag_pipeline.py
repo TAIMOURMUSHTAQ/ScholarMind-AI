@@ -2,7 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from app.exceptions import EmptyQuestionError
+from app.exceptions import EmptyQuestionError, GeminiUnavailableError
+from app.rag.conversation_memory import ConversationMemory
 from app.rag.rag_pipeline import RAGPipeline, compare_key
 
 
@@ -55,3 +56,28 @@ def test_ask_with_no_matches_still_calls_gemini_with_empty_context_notice(mock_c
     assert result["sources"] == []
     called_message = mock_chat.call_args.args[2]
     assert "No relevant passages" in called_message
+
+
+@patch("app.rag.rag_pipeline.VectorStore.query", return_value=[])
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat_stream")
+def test_ask_stream_persists_partial_answer_when_stream_errors_mid_way(mock_chat_stream, mock_embed, mock_query):
+    def failing_stream(*args, **kwargs):
+        yield "Partial "
+        yield "answer."
+        raise GeminiUnavailableError("dropped partway")
+
+    mock_chat_stream.return_value = failing_stream()
+
+    sources, token_generator = RAGPipeline().ask_stream("paper-1", "What dataset?", top_k=3)
+
+    received = []
+    with pytest.raises(GeminiUnavailableError):
+        for delta in token_generator:
+            received.append(delta)
+
+    assert "".join(received) == "Partial answer."
+
+    turns = ConversationMemory.get_turns("paper-1")
+    assert turns[-1]["role"] == "assistant"
+    assert turns[-1]["content"] == "Partial answer."

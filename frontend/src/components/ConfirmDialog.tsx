@@ -1,3 +1,5 @@
+import { AlertTriangleIcon } from "./icons";
+
 interface Props {
   open: boolean;
   title: string;
@@ -12,13 +14,22 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-[2px]" onClick={onCancel}>
       <div
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-        <p className="mt-2 text-sm text-slate-500">{message}</p>
+        <div className="flex items-start gap-3">
+          {danger && (
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <AlertTriangleIcon className="h-4.5 w-4.5" />
+            </span>
+          )}
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+            <p className="mt-1.5 text-sm text-slate-500">{message}</p>
+          </div>
+        </div>
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onCancel}

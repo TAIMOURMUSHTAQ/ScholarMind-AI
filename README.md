@@ -34,7 +34,7 @@ flowchart LR
 - **Conversation memory** is replayed to Gemini as chat history on every turn, so follow-up questions ("what dataset did *they* use?") resolve correctly instead of each question being answered in isolation.
 - **Streaming answers** over Server-Sent Events: retrieval happens eagerly so sources render immediately, then Gemini's response streams in token-by-token. It's a POST endpoint (the request body carries the question), so the browser can't use the native `EventSource` API (GET-only) - the frontend reads the response body as a stream and parses the same `event:`/`data:` framing by hand.
 - **Cross-paper comparison** reuses the exact same chat/history/export code path as single-paper chat: `/api/compare/{id1,id2,...}/chat` retrieves from each paper's own FAISS index independently, labels every source with which paper it came from, and stores its conversation under a synthetic key so the comparison has its own persistent history distinct from either paper's individual chat.
-- **Chat export** (Markdown or PDF) is generated from the same stored conversation turns used for the on-screen history, so what you export always matches what you see. PDF generation uses fpdf2 (pure Python, no native build step, consistent with the FAISS-over-Chroma reasoning above).
+- **Chat export** (Markdown or PDF) is generated from the same stored conversation turns used for the on-screen history, so what you export always matches what you see. PDF generation uses fpdf2 (pure Python, no native build step, consistent with the FAISS-over-Chroma reasoning above) with the bundled DejaVu Sans font embedded for full Unicode text, rather than the Latin-1-only core fonts fpdf2 ships by default.
 
 ## Project structure
 
@@ -50,6 +50,7 @@ backend/
       chunking.py, embeddings.py, vector_store.py, gemini_client.py,
       conversation_memory.py, rag_pipeline.py
       export.py            Markdown/PDF transcript export
+    assets/fonts/          bundled DejaVu Sans (Unicode PDF text, Bitstream Vera license)
     storage/paper_store.py  JSON-backed paper registry
     routes/                papers.py, chat.py, compare.py
     ingestion.py           Upload -> parse -> chunk -> embed -> index
@@ -141,5 +142,4 @@ Gemini calls are mocked in tests, so running the suite does not consume API quot
 ## Known limitations
 
 - Metadata/section extraction is heuristic (font size, numbered-heading regex) and tuned to common single- and IEEE-style two-column layouts, so it can misfire on unusual PDF layouts (rename the paper manually if the extracted title is wrong). This only affects the summary card; chat answers are grounded in retrieved chunk text regardless.
-- Streaming retry/backoff only covers establishing the connection; a network error partway through an already-started stream propagates to the UI as-is rather than resuming.
-- PDF export uses fpdf2's core fonts, which only cover Latin-1; characters outside that range are replaced rather than rendered. The Markdown export has no such limitation.
+- A dropped connection mid-stream doesn't resume - retry/backoff only applies before the first token of a response goes out, since retrying after that would re-send the whole answer and duplicate/garble what the client already rendered. What streamed in before the drop is kept, both on screen and in the paper's saved conversation history; the user just needs to ask again to continue.

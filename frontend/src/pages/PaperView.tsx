@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, paperChatBase, type PaperDetail } from "../api/client";
 import ChatPanel from "../components/ChatPanel";
+import { ArrowLeftIcon, PencilIcon } from "../components/icons";
 
 export default function PaperView() {
   const { id } = useParams<{ id: string }>();
@@ -46,8 +47,8 @@ export default function PaperView() {
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <p className="text-lg font-semibold text-red-600">{error}</p>
-        <Link to="/" className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
-          ← Back to library
+        <Link to="/" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+          <ArrowLeftIcon className="h-4 w-4" /> Back to library
         </Link>
       </div>
     );
@@ -64,8 +65,8 @@ export default function PaperView() {
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 py-8 lg:grid-cols-[1.1fr_1.4fr]">
       <div className="space-y-4">
-        <button onClick={() => navigate("/")} className="text-sm font-medium text-slate-400 hover:text-slate-700">
-          ← Back to library
+        <button onClick={() => navigate("/")} className="flex items-center gap-1.5 text-sm font-medium text-slate-400 hover:text-slate-700">
+          <ArrowLeftIcon className="h-4 w-4" /> Back to library
         </button>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -89,7 +90,7 @@ export default function PaperView() {
                 title="Rename"
                 className="mt-1 shrink-0 rounded p-0.5 text-slate-300 opacity-0 transition-opacity hover:text-slate-500 group-hover:opacity-100"
               >
-                ✎
+                <PencilIcon className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -114,8 +115,8 @@ export default function PaperView() {
             <div className="mt-5">
               <h2 className="text-sm font-semibold text-slate-700">Sections</h2>
               <ul className="mt-1.5 space-y-1 text-sm text-slate-500">
-                {paper.section_titles.map((title) => (
-                  <li key={title} className="truncate">
+                {paper.section_titles.map((title, i) => (
+                  <li key={`${i}-${title}`} className="truncate">
                     · {title}
                   </li>
                 ))}

@@ -1,4 +1,14 @@
+import pymupdf
+
 from app.rag.export import build_markdown, build_pdf
+
+
+def _extract_pdf_text(pdf_bytes: bytes) -> str:
+    doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
+    try:
+        return "".join(page.get_text() for page in doc)
+    finally:
+        doc.close()
 
 TURNS = [
     {"role": "user", "content": "What dataset was used?", "sources": []},
@@ -45,7 +55,10 @@ def test_pdf_export_produces_nonempty_bytes():
     assert len(pdf_bytes) > 100
 
 
-def test_pdf_export_survives_non_latin1_characters():
-    unicode_turns = [{"role": "assistant", "content": "Uses ≥ 90% accuracy — impressive.", "sources": []}]
+def test_pdf_export_renders_non_latin1_characters_faithfully():
+    unicode_turns = [{"role": "assistant", "content": "Uses ≥ 90% accuracy — impressive: 日本語も.", "sources": []}]
     pdf_bytes = build_pdf("My Paper", unicode_turns)
+
     assert pdf_bytes.startswith(b"%PDF")
+    extracted = _extract_pdf_text(pdf_bytes)
+    assert "≥ 90% accuracy — impressive" in extracted

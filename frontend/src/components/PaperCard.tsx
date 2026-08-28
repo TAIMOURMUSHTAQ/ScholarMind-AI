@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { PaperSummary } from "../api/client";
+import { CheckCircleIcon, ClockIcon, AlertTriangleIcon, PencilIcon, TrashIcon } from "./icons";
 
 const STATUS_STYLES: Record<PaperSummary["status"], string> = {
   ready: "bg-emerald-50 text-emerald-700",
@@ -12,6 +13,12 @@ const STATUS_LABEL: Record<PaperSummary["status"], string> = {
   ready: "Ready",
   processing: "Processing…",
   failed: "Failed",
+};
+
+const STATUS_ICON: Record<PaperSummary["status"], typeof CheckCircleIcon> = {
+  ready: CheckCircleIcon,
+  processing: ClockIcon,
+  failed: AlertTriangleIcon,
 };
 
 interface Props {
@@ -27,6 +34,7 @@ export default function PaperCard({ paper, onRequestDelete, onRename, compareMod
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(paper.title);
   const inputRef = useRef<HTMLInputElement>(null);
+  const StatusIcon = STATUS_ICON[paper.status];
 
   useEffect(() => {
     if (editing) inputRef.current?.focus();
@@ -59,7 +67,8 @@ export default function PaperCard({ paper, onRequestDelete, onRename, compareMod
                 className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
               />
             )}
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[paper.status]}`}>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[paper.status]}`}>
+              <StatusIcon className="h-3 w-3" strokeWidth={2.25} />
               {STATUS_LABEL[paper.status]}
             </span>
           </div>
@@ -70,10 +79,10 @@ export default function PaperCard({ paper, onRequestDelete, onRename, compareMod
                 e.stopPropagation();
                 onRequestDelete(paper.id);
               }}
-              className="rounded-md p-1 text-slate-300 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+              className="rounded-md p-1.5 text-slate-300 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
               title="Delete paper"
             >
-              ✕
+              <TrashIcon className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -105,7 +114,7 @@ export default function PaperCard({ paper, onRequestDelete, onRename, compareMod
                 title="Rename"
                 className="mt-0.5 shrink-0 rounded p-0.5 text-slate-300 opacity-0 transition-opacity hover:text-slate-500 group-hover:opacity-100"
               >
-                ✎
+                <PencilIcon className="h-3.5 w-3.5" />
               </button>
             )}
           </div>

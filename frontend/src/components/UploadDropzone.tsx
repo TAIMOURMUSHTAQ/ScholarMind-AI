@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { DocumentIcon } from "./icons";
 
 interface Props {
   onUpload: (file: File) => Promise<void>;
@@ -44,8 +45,10 @@ export default function UploadDropzone({ onUpload }: Props) {
           handleFile(e.dataTransfer.files?.[0]);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-8 py-14 text-center transition-colors ${
-          dragging ? "border-brand-500 bg-brand-50" : "border-slate-300 bg-white hover:border-brand-400 hover:bg-slate-50"
+        className={`flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed px-8 py-14 text-center transition-all ${
+          dragging
+            ? "border-brand-500 bg-brand-50 shadow-inner"
+            : "border-slate-300 bg-white hover:border-brand-400 hover:bg-slate-50"
         }`}
       >
         <input
@@ -62,9 +65,17 @@ export default function UploadDropzone({ onUpload }: Props) {
           </>
         ) : (
           <>
-            <span className="text-4xl">📄</span>
-            <p className="text-base font-semibold text-slate-800">Drop a research paper PDF here</p>
-            <p className="text-sm text-slate-500">or click to browse, we'll parse it and get it ready to chat with</p>
+            <span
+              className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-colors ${
+                dragging ? "bg-brand-100 text-brand-600" : "bg-slate-100 text-slate-400"
+              }`}
+            >
+              <DocumentIcon className="h-7 w-7" />
+            </span>
+            <div>
+              <p className="text-base font-semibold text-slate-800">Drop a research paper PDF here</p>
+              <p className="mt-1 text-sm text-slate-500">or click to browse, we'll parse it and get it ready to chat with</p>
+            </div>
           </>
         )}
       </div>

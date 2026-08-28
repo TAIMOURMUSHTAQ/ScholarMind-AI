@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, exportUrl, streamChat, type ChatTurn, type ExportFormat } from "../api/client";
+import { ChatBubbleIcon, ChevronDownIcon, DownloadIcon, LogoMark } from "./icons";
 
 interface Props {
   basePath: string;
@@ -61,7 +62,12 @@ export default function ChatPanel({
       onDone: () => setSending(false),
       onError: (message) => {
         setSending(false);
-        setTurns((prev) => prev.slice(0, -1));
+        // Only drop the assistant bubble if nothing streamed in yet; a
+        // mid-stream drop keeps whatever partial answer the user already saw.
+        setTurns((prev) => {
+          const last = prev[prev.length - 1];
+          return last?.role === "assistant" && last.content === "" ? prev.slice(0, -1) : prev;
+        });
         setError(
           message.toLowerCase().includes("rate limit")
             ? "Gemini's free-tier rate limit was hit. Please wait a minute and try again."
@@ -87,9 +93,11 @@ export default function ChatPanel({
           <button
             onClick={() => setExportOpen((v) => !v)}
             disabled={turns.length === 0}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Export ▾
+            <DownloadIcon className="h-3.5 w-3.5" />
+            Export
+            <ChevronDownIcon className="h-3 w-3" />
           </button>
           {exportOpen && (
             <div className="absolute right-0 z-10 mt-1 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
@@ -114,8 +122,10 @@ export default function ChatPanel({
         {!historyLoaded ? (
           <div className="flex h-full items-center justify-center text-sm text-slate-400">Loading conversation…</div>
         ) : turns.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-slate-400">
-            <span className="text-3xl">💬</span>
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-slate-400">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <ChatBubbleIcon className="h-6 w-6" />
+            </span>
             <p className="text-sm">
               Ask something like <span className="italic">"What is the main contribution?"</span>
             </p>
@@ -157,7 +167,12 @@ export default function ChatPanel({
 function ChatBubble({ turn, pending }: { turn: ChatTurn; pending: boolean }) {
   const isUser = turn.role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
+      {!isUser && (
+        <span className="mb-0.5 flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+          <LogoMark className="h-6 w-6" />
+        </span>
+      )}
       <div className={`max-w-[85%] ${isUser ? "" : "w-full"}`}>
         <div
           className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm ${

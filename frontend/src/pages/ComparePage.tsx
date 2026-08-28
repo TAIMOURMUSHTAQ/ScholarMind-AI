@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, compareChatBase, type PaperSummary } from "../api/client";
 import ChatPanel from "../components/ChatPanel";
+import { ArrowLeftIcon } from "../components/icons";
 
 export default function ComparePage() {
   const { ids } = useParams<{ ids: string }>();
@@ -26,8 +27,8 @@ export default function ComparePage() {
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <p className="text-lg font-semibold text-red-600">{error}</p>
-        <button onClick={() => navigate("/")} className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
-          ← Back to library
+        <button onClick={() => navigate("/")} className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+          <ArrowLeftIcon className="h-4 w-4" /> Back to library
         </button>
       </div>
     );
@@ -43,8 +44,8 @@ export default function ComparePage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8">
-      <button onClick={() => navigate("/")} className="self-start text-sm font-medium text-slate-400 hover:text-slate-700">
-        ← Back to library
+      <button onClick={() => navigate("/")} className="flex items-center gap-1.5 self-start text-sm font-medium text-slate-400 hover:text-slate-700">
+        <ArrowLeftIcon className="h-4 w-4" /> Back to library
       </button>
 
       <div className="flex flex-wrap gap-2">

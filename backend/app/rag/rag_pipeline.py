@@ -55,6 +55,21 @@ def _build_compare_context(matches: list[dict]) -> str:
     return "\n\n".join(parts)
 
 
+def _stream_and_persist(gemini: GeminiClient, system_prompt: str, history: list[dict], message: str, memory_key: str, sources: list[dict]):
+    """Yield deltas from Gemini, persisting whatever accumulated even if the
+    stream errors partway through (see GeminiClient.chat_stream) - so a
+    dropped connection doesn't silently discard an otherwise-good partial
+    answer from the paper's conversation history."""
+    chunks: list[str] = []
+    try:
+        for delta in gemini.chat_stream(system_prompt, history, message):
+            chunks.append(delta)
+            yield delta
+    finally:
+        if chunks:
+            ConversationMemory.append_turn(memory_key, "assistant", "".join(chunks), sources)
+
+
 def _to_sources(matches: list[dict]) -> list[dict]:
     return [
         {
@@ -107,15 +122,8 @@ class RAGPipeline:
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(paper_id, "user", question)
-
-        def token_generator():
-            chunks: list[str] = []
-            for delta in self.gemini.chat_stream(SYSTEM_PROMPT, history, message):
-                chunks.append(delta)
-                yield delta
-            ConversationMemory.append_turn(paper_id, "assistant", "".join(chunks), sources)
-
-        return sources, token_generator()
+        token_generator = _stream_and_persist(self.gemini, SYSTEM_PROMPT, history, message, paper_id, sources)
+        return sources, token_generator
 
     # ---------------------------------------------------------------- multi-paper compare
 
@@ -158,12 +166,5 @@ class RAGPipeline:
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(key, "user", question)
-
-        def token_generator():
-            chunks: list[str] = []
-            for delta in self.gemini.chat_stream(COMPARE_SYSTEM_PROMPT, history, message):
-                chunks.append(delta)
-                yield delta
-            ConversationMemory.append_turn(key, "assistant", "".join(chunks), sources)
-
-        return sources, token_generator()
+        token_generator = _stream_and_persist(self.gemini, COMPARE_SYSTEM_PROMPT, history, message, key, sources)
+        return sources, token_generator
