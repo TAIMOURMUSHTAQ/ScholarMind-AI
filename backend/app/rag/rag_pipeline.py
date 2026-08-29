@@ -1,5 +1,6 @@
 from app.config import DEFAULT_TOP_K
 from app.exceptions import EmptyQuestionError
+from app.rag import enrichment
 from app.rag.conversation_memory import ConversationMemory
 from app.rag.embeddings import EmbeddingGenerator
 from app.rag.gemini_client import GeminiClient
@@ -26,10 +27,27 @@ Rules:
 5. Refer to sources by their number, e.g. "(Source 2)".
 """
 
+_READING_LEVEL_CLAUSES = {
+    "default": "",
+    "eli5": (
+        "\n\nStyle: explain like the reader is a curious beginner with no background in this field. "
+        "Avoid jargon; when a technical term is unavoidable, briefly explain it in plain language. "
+        "Use simple analogies where helpful."
+    ),
+    "expert": (
+        "\n\nStyle: the reader is an expert in this field. Be technically precise, use proper "
+        "terminology without hedging, and skip explanations of basic concepts."
+    ),
+}
+
 
 def compare_key(paper_ids: list[str]) -> str:
     """Deterministic conversation-memory key for a set of papers, order-independent."""
     return "compare_" + "_".join(sorted(paper_ids))
+
+
+def _system_prompt_for(base_prompt: str, reading_level: str) -> str:
+    return base_prompt + _READING_LEVEL_CLAUSES.get(reading_level, "")
 
 
 def _build_context(matches: list[dict]) -> str:
@@ -89,6 +107,26 @@ class RAGPipeline:
     def __init__(self):
         self.gemini = GeminiClient()
 
+    @staticmethod
+    def suggest_followups(question: str, answer: str) -> list[str]:
+        """Best-effort follow-up question suggestions; never raises."""
+        return enrichment.suggest_followups(question, answer)
+
+    def ask_about_figure(self, caption: str, image_bytes: bytes, mime_type: str, question: str) -> str:
+        """Multimodal Q&A scoped to a single extracted figure/table image."""
+        question = (question or "").strip()
+        if not question:
+            raise EmptyQuestionError("Please enter a question.")
+
+        system_prompt = (
+            "You are ScholarMind AI, answering a question about ONE specific figure or table "
+            "from a research paper. Base your answer only on what is visible in the image "
+            "(plus its caption, if given). If the image doesn't show what's being asked, say so "
+            "plainly rather than guessing."
+        )
+        message = f"Caption: {caption}\n\nQuestion: {question}" if caption else f"Question: {question}"
+        return self.gemini.generate_with_image(system_prompt, message, image_bytes, mime_type)
+
     # ---------------------------------------------------------------- single paper
 
     def _prepare(self, paper_id: str, question: str, top_k: int):
@@ -103,18 +141,18 @@ class RAGPipeline:
         message = f"Context:\n{context}\n\nQuestion: {question}"
         return question, matches, history, message
 
-    def ask(self, paper_id: str, question: str, top_k: int = DEFAULT_TOP_K) -> dict:
+    def ask(self, paper_id: str, question: str, top_k: int = DEFAULT_TOP_K, reading_level: str = "default") -> dict:
         question, matches, history, message = self._prepare(paper_id, question, top_k)
 
-        answer = self.gemini.chat(SYSTEM_PROMPT, history, message)
+        answer = self.gemini.chat(_system_prompt_for(SYSTEM_PROMPT, reading_level), history, message)
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(paper_id, "user", question)
         ConversationMemory.append_turn(paper_id, "assistant", answer, sources)
 
-        return {"answer": answer, "sources": sources}
+        return {"answer": answer, "sources": sources, "followups": self.suggest_followups(question, answer)}
 
-    def ask_stream(self, paper_id: str, question: str, top_k: int = DEFAULT_TOP_K):
+    def ask_stream(self, paper_id: str, question: str, top_k: int = DEFAULT_TOP_K, reading_level: str = "default"):
         """Returns (sources, token_generator). Sources are ready immediately
         (retrieval already happened); the generator lazily calls Gemini and
         persists the full answer to conversation memory once exhausted."""
@@ -122,7 +160,8 @@ class RAGPipeline:
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(paper_id, "user", question)
-        token_generator = _stream_and_persist(self.gemini, SYSTEM_PROMPT, history, message, paper_id, sources)
+        system_prompt = _system_prompt_for(SYSTEM_PROMPT, reading_level)
+        token_generator = _stream_and_persist(self.gemini, system_prompt, history, message, paper_id, sources)
         return sources, token_generator
 
     # ---------------------------------------------------------------- multi-paper compare
@@ -150,21 +189,22 @@ class RAGPipeline:
         message = f"Context (spanning {len(paper_ids)} papers):\n{context}\n\nQuestion: {question}"
         return question, all_matches, history, message, key
 
-    def ask_compare(self, paper_ids: list[str], question: str, top_k: int = DEFAULT_TOP_K) -> dict:
+    def ask_compare(self, paper_ids: list[str], question: str, top_k: int = DEFAULT_TOP_K, reading_level: str = "default") -> dict:
         question, matches, history, message, key = self._prepare_compare(paper_ids, question, top_k)
 
-        answer = self.gemini.chat(COMPARE_SYSTEM_PROMPT, history, message)
+        answer = self.gemini.chat(_system_prompt_for(COMPARE_SYSTEM_PROMPT, reading_level), history, message)
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(key, "user", question)
         ConversationMemory.append_turn(key, "assistant", answer, sources)
 
-        return {"answer": answer, "sources": sources}
+        return {"answer": answer, "sources": sources, "followups": self.suggest_followups(question, answer)}
 
-    def ask_compare_stream(self, paper_ids: list[str], question: str, top_k: int = DEFAULT_TOP_K):
+    def ask_compare_stream(self, paper_ids: list[str], question: str, top_k: int = DEFAULT_TOP_K, reading_level: str = "default"):
         question, matches, history, message, key = self._prepare_compare(paper_ids, question, top_k)
         sources = _to_sources(matches)
 
         ConversationMemory.append_turn(key, "user", question)
-        token_generator = _stream_and_persist(self.gemini, COMPARE_SYSTEM_PROMPT, history, message, key, sources)
+        system_prompt = _system_prompt_for(COMPARE_SYSTEM_PROMPT, reading_level)
+        token_generator = _stream_and_persist(self.gemini, system_prompt, history, message, key, sources)
         return sources, token_generator

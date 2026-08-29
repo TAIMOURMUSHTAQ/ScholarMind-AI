@@ -23,6 +23,7 @@ MIN_CHARS_PER_PAGE = float(os.getenv("MIN_CHARS_PER_PAGE", "20"))
 DATA_DIR = Path(os.getenv("DATA_DIR", str(BACKEND_ROOT / "data")))
 UPLOADS_DIR = DATA_DIR / "uploads"
 CONVERSATIONS_DIR = DATA_DIR / "conversations"
+FIGURES_DIR = DATA_DIR / "figures"
 PAPER_STORE_PATH = DATA_DIR / "papers.json"
 VECTOR_STORE_DIR = Path(os.getenv("VECTOR_STORE_DIR", str(BACKEND_ROOT / "vector_store_data")))
 
@@ -30,5 +31,5 @@ CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "30"))
 
-for directory in (DATA_DIR, UPLOADS_DIR, CONVERSATIONS_DIR, VECTOR_STORE_DIR):
+for directory in (DATA_DIR, UPLOADS_DIR, CONVERSATIONS_DIR, FIGURES_DIR, VECTOR_STORE_DIR):
     directory.mkdir(parents=True, exist_ok=True)

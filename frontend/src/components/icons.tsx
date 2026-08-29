@@ -140,6 +140,15 @@ export function ClockIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function SearchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M20 20l-4.5-4.5" />
+    </svg>
+  );
+}
+
 export function AlertTriangleIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>

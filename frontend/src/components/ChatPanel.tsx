@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, exportUrl, streamChat, type ChatTurn, type ExportFormat } from "../api/client";
+import { api, exportUrl, streamChat, type ChatTurn, type ExportFormat, type ReadingLevel } from "../api/client";
 import { ChatBubbleIcon, ChevronDownIcon, DownloadIcon, LogoMark } from "./icons";
 
 interface Props {
@@ -7,6 +7,12 @@ interface Props {
   title?: string;
   subtitle?: string;
 }
+
+const READING_LEVELS: { value: ReadingLevel; label: string }[] = [
+  { value: "eli5", label: "Simple" },
+  { value: "default", label: "Standard" },
+  { value: "expert", label: "Expert" },
+];
 
 export default function ChatPanel({
   basePath,
@@ -19,6 +25,7 @@ export default function ChatPanel({
   const [error, setError] = useState<string | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [readingLevel, setReadingLevel] = useState<ReadingLevel>("default");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,8 +41,7 @@ export default function ChatPanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [turns, sending]);
 
-  const send = async () => {
-    const question = input.trim();
+  const sendQuestion = async (question: string) => {
     if (!question || sending) return;
 
     setInput("");
@@ -43,7 +49,7 @@ export default function ChatPanel({
     setTurns((prev) => [...prev, { role: "user", content: question, sources: [] }, { role: "assistant", content: "", sources: [] }]);
     setSending(true);
 
-    await streamChat(basePath, question, 5, {
+    await streamChat(basePath, question, 5, readingLevel, {
       onSources: (sources) => {
         setTurns((prev) => {
           const next = [...prev];
@@ -56,6 +62,13 @@ export default function ChatPanel({
           const next = [...prev];
           const last = next[next.length - 1];
           next[next.length - 1] = { ...last, content: last.content + text };
+          return next;
+        });
+      },
+      onFollowups: (followups) => {
+        setTurns((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { ...next[next.length - 1], followups };
           return next;
         });
       },
@@ -81,6 +94,9 @@ export default function ChatPanel({
     setExportOpen(false);
     window.open(exportUrl(basePath, format), "_blank");
   };
+
+  const lastTurn = turns[turns.length - 1];
+  const showFollowups = !sending && lastTurn?.role === "assistant" && (lastTurn.followups?.length ?? 0) > 0;
 
   return (
     <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -133,32 +149,64 @@ export default function ChatPanel({
         ) : (
           turns.map((turn, i) => <ChatBubble key={i} turn={turn} pending={sending && i === turns.length - 1 && turn.role === "assistant"} />)
         )}
+
+        {showFollowups && (
+          <div className="flex flex-wrap gap-1.5 pl-8">
+            {lastTurn.followups!.map((followup) => (
+              <button
+                key={followup}
+                onClick={() => sendQuestion(followup)}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+              >
+                {followup}
+              </button>
+            ))}
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
       {error && <p className="mx-5 mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>}
 
-      <div className="flex items-end gap-2 border-t border-slate-100 p-4">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-          rows={1}
-          placeholder="Ask a follow-up question…"
-          className="max-h-32 flex-1 resize-none rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-        />
-        <button
-          onClick={send}
-          disabled={sending || !input.trim()}
-          className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
-        >
-          Send
-        </button>
+      <div className="border-t border-slate-100 p-4">
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Explain as:</span>
+          <div className="flex overflow-hidden rounded-full border border-slate-200">
+            {READING_LEVELS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setReadingLevel(value)}
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                  readingLevel === value ? "bg-brand-600 text-white" : "bg-white text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-end gap-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendQuestion(input.trim());
+              }
+            }}
+            rows={1}
+            placeholder="Ask a follow-up question…"
+            className="max-h-32 flex-1 resize-none rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          />
+          <button
+            onClick={() => sendQuestion(input.trim())}
+            disabled={sending || !input.trim()}
+            className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );

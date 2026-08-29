@@ -28,11 +28,15 @@ def _require_ready_paper(paper_id: str) -> dict:
     return record
 
 
-def _sse_stream(sources: list[dict], token_generator):
+def _sse_stream(sources: list[dict], token_generator, question: str):
     yield f"event: sources\ndata: {json.dumps(sources)}\n\n"
+    chunks: list[str] = []
     try:
         for delta in token_generator:
+            chunks.append(delta)
             yield f"event: delta\ndata: {json.dumps({'text': delta})}\n\n"
+        followups = RAGPipeline.suggest_followups(question, "".join(chunks))
+        yield f"event: followups\ndata: {json.dumps(followups)}\n\n"
         yield "event: done\ndata: {}\n\n"
     except (GeminiRateLimitError, GeminiUnavailableError) as exc:
         yield f"event: error\ndata: {json.dumps({'detail': str(exc)})}\n\n"
@@ -42,7 +46,7 @@ def _sse_stream(sources: list[dict], token_generator):
 def chat_with_paper(paper_id: str, body: ChatRequest):
     _require_ready_paper(paper_id)
     try:
-        result = _pipeline.ask(paper_id, body.question, body.top_k)
+        result = _pipeline.ask(paper_id, body.question, body.top_k, body.reading_level)
     except EmptyQuestionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except GeminiRateLimitError as exc:
@@ -56,11 +60,11 @@ def chat_with_paper(paper_id: str, body: ChatRequest):
 def chat_with_paper_stream(paper_id: str, body: ChatRequest):
     _require_ready_paper(paper_id)
     try:
-        sources, token_generator = _pipeline.ask_stream(paper_id, body.question, body.top_k)
+        sources, token_generator = _pipeline.ask_stream(paper_id, body.question, body.top_k, body.reading_level)
     except EmptyQuestionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return StreamingResponse(_sse_stream(sources, token_generator), media_type="text/event-stream")
+    return StreamingResponse(_sse_stream(sources, token_generator, body.question), media_type="text/event-stream")
 
 
 @router.get("/{paper_id}/chat/history", response_model=list[ChatTurnOut])

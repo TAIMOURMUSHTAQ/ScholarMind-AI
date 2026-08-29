@@ -6,6 +6,7 @@ enforces per-minute request quotas. Any real usage will eventually hit a
 of times with exponential backoff and only then surface a clear,
 actionable error to the API layer.
 """
+import json
 import time
 
 import google.generativeai as genai
@@ -69,6 +70,82 @@ class GeminiClient:
         raise GeminiRateLimitError(
             "Gemini's free-tier rate limit was hit and retries were exhausted. "
             "Please wait a minute and try again."
+        ) from last_error
+
+    def generate_json(
+        self,
+        system_prompt: str,
+        message: str,
+        max_retries: int = 2,
+        base_delay_seconds: float = 2.0,
+    ):
+        """One-shot, non-chat call constrained to JSON output.
+
+        Used for best-effort enrichment (insight cards, tags, follow-up
+        suggestions) - callers are expected to treat any exception here as
+        "enrichment unavailable" rather than a hard failure, since none of
+        it blocks the core chat feature.
+        """
+        if not self.available:
+            raise GeminiUnavailableError("GEMINI_API_KEY is not configured.")
+
+        model = genai.GenerativeModel(
+            self.model_name,
+            system_instruction=system_prompt,
+            generation_config=genai.GenerationConfig(response_mime_type="application/json"),
+        )
+
+        last_error: Exception | None = None
+        for attempt in range(max_retries + 1):
+            try:
+                response = model.generate_content(message)
+                return json.loads(response.text)
+            except _RETRYABLE as exc:
+                last_error = exc
+                if attempt < max_retries:
+                    time.sleep(base_delay_seconds * (2**attempt))
+            except (GoogleAPICallError, json.JSONDecodeError) as exc:
+                raise GeminiUnavailableError(f"Gemini JSON generation failed: {exc}") from exc
+            except Exception as exc:
+                raise GeminiUnavailableError(f"Unexpected error calling Gemini: {exc}") from exc
+
+        raise GeminiRateLimitError("Gemini's free-tier rate limit was hit and retries were exhausted.") from last_error
+
+    def generate_with_image(
+        self,
+        system_prompt: str,
+        message: str,
+        image_bytes: bytes,
+        mime_type: str,
+        max_retries: int = 3,
+        base_delay_seconds: float = 2.0,
+    ) -> str:
+        """One-shot multimodal call: text + a single inline image."""
+        if not self.available:
+            raise GeminiUnavailableError(
+                "GEMINI_API_KEY is not configured. Add it to backend/.env to enable chat "
+                "(get a free key at https://aistudio.google.com/apikey)."
+            )
+
+        model = genai.GenerativeModel(self.model_name, system_instruction=system_prompt)
+        parts = [message, {"mime_type": mime_type, "data": image_bytes}]
+
+        last_error: Exception | None = None
+        for attempt in range(max_retries + 1):
+            try:
+                response = model.generate_content(parts)
+                return (response.text or "").strip()
+            except _RETRYABLE as exc:
+                last_error = exc
+                if attempt < max_retries:
+                    time.sleep(base_delay_seconds * (2**attempt))
+            except GoogleAPICallError as exc:
+                raise GeminiUnavailableError(f"Gemini API error: {exc}") from exc
+            except Exception as exc:
+                raise GeminiUnavailableError(f"Unexpected error calling Gemini: {exc}") from exc
+
+        raise GeminiRateLimitError(
+            "Gemini's free-tier rate limit was hit and retries were exhausted. Please wait a minute and try again."
         ) from last_error
 
     def chat_stream(

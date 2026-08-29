@@ -1,11 +1,16 @@
 """Upload -> parse -> chunk -> embed -> index, one call per uploaded PDF."""
+import shutil
 from pathlib import Path
 
-from app.config import UPLOADS_DIR
+import pymupdf
+
+from app.config import FIGURES_DIR, UPLOADS_DIR
 from app.logger import logger
+from app.pdf.figure_extractor import FigureExtractor
 from app.pdf.pdf_processor import PDFProcessor
 from app.rag.chunking import ChunkGenerator
 from app.rag.embeddings import EmbeddingGenerator
+from app.rag.enrichment import generate_insight_card, generate_tags
 from app.rag.vector_store import VectorStore
 from app.storage.paper_store import PaperStore
 
@@ -28,6 +33,40 @@ def ingest_paper(paper_id: str, pdf_path: Path) -> None:
     except Exception as exc:
         logger.exception("Ingestion failed for paper %s", paper_id)
         PaperStore.mark_failed(paper_id, str(exc))
+        return
+
+    _extract_figures(paper_id, pdf_path)
+    _enrich_paper(paper_id, paper)
+
+
+def _extract_figures(paper_id: str, pdf_path: Path) -> None:
+    """Best-effort: figures are a bonus panel, never block "ready" status."""
+    try:
+        doc = pymupdf.open(pdf_path)
+        try:
+            figures = FigureExtractor.extract(doc, FIGURES_DIR / paper_id)
+        finally:
+            doc.close()
+        PaperStore.set_figures(paper_id, figures)
+    except Exception:
+        logger.warning("Figure extraction failed for paper %s", paper_id, exc_info=True)
+
+
+def _enrich_paper(paper_id: str, paper) -> None:
+    """Best-effort: an insight card and topic tags. Failure here never
+    affects the paper's "ready" status - chat works regardless."""
+    try:
+        card = generate_insight_card(paper.title, paper.abstract, paper.full_text)
+        PaperStore.set_insight_card(paper_id, card)
+    except Exception:
+        logger.warning("Insight card generation failed for paper %s", paper_id, exc_info=True)
+        PaperStore.set_insight_card(paper_id, None)
+
+    try:
+        tags = generate_tags(paper.title, paper.abstract)
+        PaperStore.set_tags(paper_id, tags)
+    except Exception:
+        logger.warning("Tag generation failed for paper %s", paper_id, exc_info=True)
 
 
 def delete_paper_files(paper_id: str, filename: str) -> None:
@@ -35,3 +74,4 @@ def delete_paper_files(paper_id: str, filename: str) -> None:
     upload_path = UPLOADS_DIR / f"{paper_id}_{filename}"
     if upload_path.exists():
         upload_path.unlink()
+    shutil.rmtree(FIGURES_DIR / paper_id, ignore_errors=True)

@@ -21,3 +21,12 @@ def test_rename_updates_title_and_persists():
 
 def test_rename_unknown_paper_returns_none():
     assert PaperStore.rename("does-not-exist", "New Title") is None
+
+
+def test_rename_invalidates_cached_related_papers():
+    PaperStore.create_placeholder("paper-1", "original.pdf")
+    PaperStore.set_related_papers("paper-1", [{"title": "Stale match"}])
+
+    PaperStore.rename("paper-1", "Corrected Title")
+
+    assert PaperStore.get("paper-1")["related_papers"] is None

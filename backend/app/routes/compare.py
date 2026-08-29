@@ -34,7 +34,7 @@ def _parse_and_validate(ids: str) -> list[str]:
 def compare_chat(ids: str, body: ChatRequest):
     paper_ids = _parse_and_validate(ids)
     try:
-        result = _pipeline.ask_compare(paper_ids, body.question, body.top_k)
+        result = _pipeline.ask_compare(paper_ids, body.question, body.top_k, body.reading_level)
     except EmptyQuestionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except GeminiRateLimitError as exc:
@@ -48,11 +48,11 @@ def compare_chat(ids: str, body: ChatRequest):
 def compare_chat_stream(ids: str, body: ChatRequest):
     paper_ids = _parse_and_validate(ids)
     try:
-        sources, token_generator = _pipeline.ask_compare_stream(paper_ids, body.question, body.top_k)
+        sources, token_generator = _pipeline.ask_compare_stream(paper_ids, body.question, body.top_k, body.reading_level)
     except EmptyQuestionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return StreamingResponse(_sse_stream(sources, token_generator), media_type="text/event-stream")
+    return StreamingResponse(_sse_stream(sources, token_generator, body.question), media_type="text/event-stream")
 
 
 @router.get("/{ids}/chat/history", response_model=list[ChatTurnOut])

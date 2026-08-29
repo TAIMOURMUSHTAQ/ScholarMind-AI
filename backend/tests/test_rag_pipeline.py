@@ -18,6 +18,15 @@ def clean_conversation(tmp_path, monkeypatch):
     yield
 
 
+@pytest.fixture(autouse=True)
+def no_real_followup_calls(monkeypatch):
+    """Follow-up suggestions are a separate best-effort Gemini call - mock
+    them everywhere by default so tests that only care about the answer
+    itself don't silently hit the real API."""
+    monkeypatch.setattr("app.rag.rag_pipeline.RAGPipeline.suggest_followups", staticmethod(lambda q, a: []))
+    yield
+
+
 def test_ask_raises_on_empty_question():
     pipeline = RAGPipeline()
     with pytest.raises(EmptyQuestionError):
@@ -81,3 +90,32 @@ def test_ask_stream_persists_partial_answer_when_stream_errors_mid_way(mock_chat
     turns = ConversationMemory.get_turns("paper-1")
     assert turns[-1]["role"] == "assistant"
     assert turns[-1]["content"] == "Partial answer."
+
+
+@patch("app.rag.rag_pipeline.VectorStore.query", return_value=[])
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat", return_value="answer")
+def test_eli5_reading_level_adds_style_instruction(mock_chat, mock_embed, mock_query):
+    RAGPipeline().ask("paper-1", "Explain this", top_k=3, reading_level="eli5")
+
+    system_prompt = mock_chat.call_args.args[0]
+    assert "curious beginner" in system_prompt
+
+
+@patch("app.rag.rag_pipeline.VectorStore.query", return_value=[])
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat", return_value="answer")
+def test_default_reading_level_adds_no_extra_instruction(mock_chat, mock_embed, mock_query):
+    RAGPipeline().ask("paper-1", "Explain this", top_k=3)
+
+    system_prompt = mock_chat.call_args.args[0]
+    assert system_prompt.strip() == "You are ScholarMind AI, a research assistant that answers questions about ONE specific paper.\n\nRules:\n1. Answer using ONLY the \"Context\" passages provided with each question, plus the ongoing conversation.\n2. Never invent facts, numbers, or citations that are not in the context.\n3. If the answer isn't in the supplied context, say plainly: \"I couldn't find this information in the paper.\"\n4. Be concise and direct; use the paper's own terminology.\n5. When useful, refer to sources by their number, e.g. \"(Source 2)\".".strip()
+
+
+@patch("app.rag.rag_pipeline.RAGPipeline.suggest_followups", return_value=["What about X?", "How does Y compare?"])
+@patch("app.rag.rag_pipeline.VectorStore.query", return_value=[])
+@patch("app.rag.rag_pipeline.EmbeddingGenerator.embed_query", return_value=[0.1, 0.2, 0.3])
+@patch("app.rag.rag_pipeline.GeminiClient.chat", return_value="answer")
+def test_ask_includes_suggested_followups(mock_chat, mock_embed, mock_query, mock_followups):
+    result = RAGPipeline().ask("paper-1", "Explain this", top_k=3)
+    assert result["followups"] == ["What about X?", "How does Y compare?"]

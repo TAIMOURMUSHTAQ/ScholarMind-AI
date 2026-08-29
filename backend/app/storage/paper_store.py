@@ -42,6 +42,11 @@ class PaperStore:
             "section_titles": [],
             "num_pages": 0,
             "num_chunks": 0,
+            "tags": [],
+            "insight_card": None,
+            "insight_status": "pending",  # "pending" | "ready" | "unavailable"
+            "related_papers": None,  # cached on first /related request
+            "figures": [],
         }
         data = _read_all()
         data[paper_id] = record
@@ -100,6 +105,47 @@ class PaperStore:
         if record is None:
             return None
         record["title"] = new_title
+        # Related-paper lookups are cached under the old title (often a
+        # garbage title extraction misfired on, which is exactly why the
+        # user is renaming) - drop the cache so the next view re-searches
+        # under the corrected title instead of returning stale results.
+        record["related_papers"] = None
         data[paper_id] = record
         _write_all(data)
         return record
+
+    @staticmethod
+    def set_insight_card(paper_id: str, card: dict | None) -> None:
+        data = _read_all()
+        if paper_id in data:
+            data[paper_id]["insight_card"] = card
+            data[paper_id]["insight_status"] = "ready" if card else "unavailable"
+            _write_all(data)
+
+    @staticmethod
+    def set_tags(paper_id: str, tags: list[str]) -> None:
+        data = _read_all()
+        if paper_id in data:
+            data[paper_id]["tags"] = tags
+            _write_all(data)
+
+    @staticmethod
+    def set_related_papers(paper_id: str, related: list[dict]) -> None:
+        data = _read_all()
+        if paper_id in data:
+            data[paper_id]["related_papers"] = related
+            _write_all(data)
+
+    @staticmethod
+    def set_figures(paper_id: str, figures: list[dict]) -> None:
+        data = _read_all()
+        if paper_id in data:
+            data[paper_id]["figures"] = figures
+            _write_all(data)
+
+    @staticmethod
+    def all_tags() -> list[str]:
+        seen = set()
+        for record in _read_all().values():
+            seen.update(record.get("tags", []))
+        return sorted(seen)
